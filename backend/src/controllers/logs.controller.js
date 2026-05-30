@@ -28,7 +28,7 @@ export const list = asyncHandler(async (req, res) => {
     `SELECT l.*, CONCAT(u.first_name,' ',u.last_name) AS user_name
      FROM logs l LEFT JOIN users u ON u.id = l.user_id
      ${whereSql}
-     ORDER BY l.created_at DESC LIMIT :limit OFFSET :offset`,
+     ORDER BY l.created_at DESC LIMIT ${limit} OFFSET ${offset}`,
     params
   );
   const [[{ total }]] = await pool.execute(`SELECT COUNT(*) AS total FROM logs l ${whereSql}`, params);

@@ -58,7 +58,7 @@ export const list = asyncHandler(async (req, res) => {
      LEFT JOIN users a ON a.id = u.administrator_id
      ${whereSql}
      ORDER BY u.created_at DESC
-     LIMIT :limit OFFSET :offset`,
+     LIMIT ${limit} OFFSET ${offset}`,
     params
   );
   const [[{ total }]] = await pool.execute(

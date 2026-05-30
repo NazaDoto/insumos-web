@@ -102,7 +102,7 @@ export const movements = asyncHandler(async (req, res) => {
      LEFT JOIN branches ob ON ob.id = m.origin_branch_id
      LEFT JOIN branches db ON db.id = m.destination_branch_id
      ${whereSql}
-     ORDER BY m.created_at DESC LIMIT :limit OFFSET :offset`,
+     ORDER BY m.created_at DESC LIMIT ${limit} OFFSET ${offset}`,
     params
   );
   const [[{ total }]] = await pool.execute(

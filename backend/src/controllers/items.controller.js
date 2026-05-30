@@ -78,7 +78,7 @@ export const list = asyncHandler(async (req, res) => {
      GROUP BY i.id
      ${havingLow}
      ORDER BY i.name
-     LIMIT :limit OFFSET :offset`,
+     LIMIT ${limit} OFFSET ${offset}`,
     params
   );
   const [[{ total }]] = await pool.execute(

@@ -39,7 +39,7 @@ export const list = asyncHandler(async (req, res) => {
      JOIN branches b ON b.id = r.branch_id
      JOIN users u ON u.id = r.employee_id
      ${whereSql}
-     ORDER BY r.created_at DESC LIMIT :limit OFFSET :offset`,
+     ORDER BY r.created_at DESC LIMIT ${limit} OFFSET ${offset}`,
     params
   );
   const [[{ total }]] = await pool.execute(`SELECT COUNT(*) AS total FROM usage_records r ${whereSql}`, params);
