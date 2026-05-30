@@ -14,7 +14,7 @@ export default async function authenticate(req, res, next) {
     try {
       payload = verifyToken(token);
     } catch (e) {
-      throw ApiError.unauthorized('Token invalido o expirado');
+      throw ApiError.unauthorized('Token inválido o expirado');
     }
 
     const [rows] = await pool.execute(

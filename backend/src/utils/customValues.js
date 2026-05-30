@@ -1,7 +1,7 @@
 import pool from '../config/db.js';
 
 /**
- * Guarda valores de atributos dinamicos para un registro de un modulo.
+ * Guarda valores de atributos dinamicos para un registro de un módulo.
  * values: { [fieldId]: value }
  */
 export async function saveCustomValues(module, recordId, values, conn = pool, adminId = null) {
@@ -9,7 +9,7 @@ export async function saveCustomValues(module, recordId, values, conn = pool, ad
   const fieldIds = Object.keys(values).map((k) => parseInt(k, 10)).filter(Boolean);
   if (!fieldIds.length) return;
 
-  // Solo persiste valores de campos validos del modulo.
+  // Solo persiste valores de campos validos del módulo.
   const [fields] = await conn.query(
     'SELECT id FROM custom_fields WHERE id IN (?) AND module = ?',
     [fieldIds, module]

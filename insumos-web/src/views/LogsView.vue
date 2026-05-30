@@ -16,8 +16,8 @@ export default {
         { key: 'created_at', label: 'Fecha' },
         { key: 'user_name', label: 'Usuario' },
         { key: 'user_role', label: 'Rol' },
-        { key: 'action', label: 'Accion' },
-        { key: 'module', label: 'Modulo' },
+        { key: 'action', label: 'Acción' },
+        { key: 'module', label: 'Módulo' },
         { key: 'detail', label: '', align: 'right' },
       ],
       detail: null,
@@ -40,11 +40,11 @@ export default {
 
 <template>
   <div>
-    <div class="page-header"><div><h1>Logs y auditoria</h1><p>Registro de acciones del sistema</p></div></div>
+    <div class="page-header"><div><h1>Logs y auditoría</h1><p>Registro de acciones del sistema</p></div></div>
 
     <div class="toolbar">
-      <input v-model="filters.module" class="input" placeholder="Modulo" style="max-width:150px" @keyup.enter="onFilter" />
-      <input v-model="filters.action" class="input" placeholder="Accion" style="max-width:150px" @keyup.enter="onFilter" />
+      <input v-model="filters.module" class="input" placeholder="Módulo" style="max-width:150px" @keyup.enter="onFilter" />
+      <input v-model="filters.action" class="input" placeholder="Acción" style="max-width:150px" @keyup.enter="onFilter" />
       <input v-model="filters.from" class="input" type="date" @change="onFilter" />
       <input v-model="filters.to" class="input" type="date" @change="onFilter" />
       <button class="btn" @click="onFilter">Filtrar</button>
@@ -60,8 +60,8 @@ export default {
 
     <BaseModal v-if="detail" title="Detalle del log" @close="detail = null">
       <div class="row" style="justify-content:space-between;padding:6px 0"><span class="muted">Usuario</span><span>{{ detail.user_name }} ({{ detail.user_role }})</span></div>
-      <div class="row" style="justify-content:space-between;padding:6px 0"><span class="muted">Accion</span><span>{{ detail.action }}</span></div>
-      <div class="row" style="justify-content:space-between;padding:6px 0"><span class="muted">Modulo</span><span>{{ detail.module }}</span></div>
+      <div class="row" style="justify-content:space-between;padding:6px 0"><span class="muted">Acción</span><span>{{ detail.action }}</span></div>
+      <div class="row" style="justify-content:space-between;padding:6px 0"><span class="muted">Módulo</span><span>{{ detail.module }}</span></div>
       <div class="row" style="justify-content:space-between;padding:6px 0"><span class="muted">Registro afectado</span><span>{{ detail.record_id || '-' }}</span></div>
       <div class="row" style="justify-content:space-between;padding:6px 0"><span class="muted">IP</span><span>{{ detail.ip_address || '-' }}</span></div>
       <div class="field mt-4"><label>Valor anterior</label><pre class="input" style="white-space:pre-wrap">{{ fmtJson(detail.old_value) }}</pre></div>

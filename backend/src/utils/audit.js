@@ -1,7 +1,7 @@
 import pool from '../config/db.js';
 
 /**
- * Registra una accion en la tabla de logs de auditoria.
+ * Registra una acción en la tabla de logs de auditoría.
  * Acepta opcionalmente una conexion para participar de una transaccion.
  */
 export async function writeLog(
@@ -40,7 +40,7 @@ export async function writeLog(
   }
 }
 
-// Extrae datos de auditoria del request.
+// Extrae datos de auditoría del request.
 export function reqMeta(req) {
   return {
     userId: req.user?.id ?? null,

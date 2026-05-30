@@ -109,7 +109,7 @@ export default {
 <template>
   <div>
     <div class="page-header">
-      <div><h1>Usuarios</h1><p>Gestion de usuarios del sistema</p></div>
+      <div><h1>Usuarios</h1><p>Gestión de usuarios del sistema</p></div>
       <button class="btn btn-primary" @click="openCreate">+ Nuevo usuario</button>
     </div>
 
@@ -179,11 +179,11 @@ export default {
           </select>
         </div>
         <div class="field">
-          <label>Telefono</label>
+          <label>Teléfono</label>
           <input v-model="form.phone" class="input" />
         </div>
         <div class="field">
-          <label>{{ isEdit ? 'Nueva contrasena (opcional)' : 'Contrasena' }} <span v-if="!isEdit" class="req">*</span></label>
+          <label>{{ isEdit ? 'Nueva contraseña (opcional)' : 'Contraseña' }} <span v-if="!isEdit" class="req">*</span></label>
           <input v-model="form.password" class="input" type="password" />
           <div v-if="errors.password" class="field-error">{{ errors.password }}</div>
         </div>

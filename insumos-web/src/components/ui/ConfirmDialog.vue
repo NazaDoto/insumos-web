@@ -5,8 +5,8 @@ export default {
   name: 'ConfirmDialog',
   components: { BaseModal },
   props: {
-    title: { type: String, default: 'Confirmar accion' },
-    message: { type: String, default: 'Esta seguro?' },
+    title: { type: String, default: 'Confirmar acción' },
+    message: { type: String, default: '¿Está seguro?' },
     confirmText: { type: String, default: 'Confirmar' },
     danger: { type: Boolean, default: false },
     loading: { type: Boolean, default: false },

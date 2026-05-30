@@ -15,13 +15,13 @@ export default {
       rows: [], loading: true,
       columns: [
         { key: 'name', label: 'Nombre' },
-        { key: 'address', label: 'Direccion' },
+        { key: 'address', label: 'Dirección' },
         { key: 'responsible_name', label: 'Responsable' },
         { key: 'status', label: 'Estado' },
         { key: 'actions', label: '', align: 'right' },
       ],
       showModal: false, saving: false, form: {}, errors: {}, togglingId: null,
-      // Asignacion de empleados
+      // Asignación de empleados
       manageBranch: null, employees: [], assignList: [], assignUserId: '',
       manageLoading: false, assigning: false, unassigningId: null,
     }
@@ -109,8 +109,8 @@ export default {
         <input v-model="form.name" class="input" />
         <div v-if="errors.name" class="field-error">{{ errors.name }}</div>
       </div>
-      <div class="field"><label>Direccion</label><input v-model="form.address" class="input" /></div>
-      <div class="field"><label>Descripcion</label><textarea v-model="form.description" class="textarea"></textarea></div>
+      <div class="field"><label>Dirección</label><input v-model="form.address" class="input" /></div>
+      <div class="field"><label>Descripción</label><textarea v-model="form.description" class="textarea"></textarea></div>
       <template #footer>
         <button class="btn" @click="showModal = false">Cancelar</button>
         <button class="btn btn-primary" :disabled="saving" @click="save"><span v-if="saving" class="spinner"></span> Guardar</button>
@@ -128,19 +128,19 @@ export default {
         </button>
       </div>
       <div v-if="manageLoading" class="loading-center"><span class="spinner dark"></span></div>
-      <table v-else class="data">
+      <table v-else class="data data-cards">
         <thead><tr><th>Empleado</th><th>Email</th><th></th></tr></thead>
         <tbody>
           <tr v-for="e in assignList" :key="e.id">
-            <td>{{ e.first_name }} {{ e.last_name }}</td>
-            <td class="muted">{{ e.email }}</td>
-            <td class="text-right">
+            <td data-label="Empleado">{{ e.first_name }} {{ e.last_name }}</td>
+            <td class="muted" data-label="Email">{{ e.email }}</td>
+            <td class="text-right" data-label="">
               <button class="btn btn-sm btn-danger" :disabled="unassigningId === e.id" @click="unassign(e.id)">
                 <span v-if="unassigningId === e.id" class="spinner"></span> Quitar
               </button>
             </td>
           </tr>
-          <tr v-if="!assignList.length"><td colspan="3" class="table-empty">Sin empleados asignados</td></tr>
+          <tr v-if="!assignList.length" class="empty-row"><td colspan="3" class="table-empty empty-cell">Sin empleados asignados</td></tr>
         </tbody>
       </table>
     </BaseModal>

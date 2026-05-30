@@ -18,7 +18,7 @@ async function queryStock(req) {
   if (req.query.branchId) { where.push('s.branch_id = :branchId'); params.branchId = req.query.branchId; }
   if (req.query.categoryId) { where.push('i.category_id = :categoryId'); params.categoryId = req.query.categoryId; }
   const [rows] = await pool.execute(
-    `SELECT i.name AS insumo, c.name AS categoria, b.name AS sucursal, i.unit AS unidad,
+    `SELECT i.name AS insumo, c.name AS categoría, b.name AS sucursal, i.unit AS unidad,
             s.quantity AS cantidad, i.minimum_stock AS stock_minimo,
             CASE WHEN s.quantity <= i.minimum_stock THEN 'SI' ELSE 'NO' END AS bajo_stock
      FROM stock s JOIN items i ON i.id=s.item_id

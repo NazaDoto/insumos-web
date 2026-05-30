@@ -10,7 +10,7 @@ export default {
   },
   mounted() {
     if (this.$route.query.expired) {
-      useUiStore().warning('Su sesion expiro, vuelva a iniciar sesion')
+      useUiStore().warning('Su sesión expiró, vuelva a iniciar sesión')
     }
   },
   methods: {
@@ -18,7 +18,7 @@ export default {
     async submit() {
       this.error = ''
       if (!this.identifier || !this.password) {
-        this.error = 'Complete usuario y contrasena'
+        this.error = 'Complete usuario y contraseña'
         return
       }
       this.loading = true
@@ -28,7 +28,7 @@ export default {
         const redirect = this.$route.query.redirect || '/dashboard'
         this.$router.push(redirect)
       } catch (e) {
-        this.error = e.userMessage || 'No se pudo iniciar sesion'
+        this.error = e.userMessage || 'No se pudo iniciar sesión'
       } finally {
         this.loading = false
       }
@@ -41,7 +41,7 @@ export default {
   <div class="login-wrap">
     <form class="login-card" @submit.prevent="submit">
       <div class="login-logo">{{ '\u{1F4E6}' }}</div>
-      <h1>Gestion de Insumos</h1>
+      <h1>Gestión de Insumos</h1>
       <p class="sub">Ingrese sus credenciales para continuar</p>
 
       <div class="field">
@@ -49,7 +49,7 @@ export default {
         <input v-model="identifier" class="input" type="text" placeholder="usuario@dominio.com" autocomplete="username" />
       </div>
       <div class="field">
-        <label>Contrasena</label>
+        <label>Contraseña</label>
         <input v-model="password" class="input" type="password" placeholder="********" autocomplete="current-password" />
       </div>
 
@@ -57,7 +57,7 @@ export default {
 
       <button class="btn btn-primary btn-block" type="submit" :disabled="loading">
         <span v-if="loading" class="spinner"></span>
-        {{ loading ? 'Ingresando...' : 'Iniciar sesion' }}
+        {{ loading ? 'Ingresando...' : 'Iniciar sesión' }}
       </button>
     </form>
   </div>

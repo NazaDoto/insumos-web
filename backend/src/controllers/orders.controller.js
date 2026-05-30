@@ -92,7 +92,7 @@ export const create = asyncHandler(async (req, res) => {
   if (!Array.isArray(items) || !items.length) throw ApiError.badRequest('Debe incluir al menos un insumo');
 
   const [prov] = await pool.execute("SELECT id FROM users WHERE id=:id AND role='provider' AND status='active'", { id: providerId });
-  if (!prov[0]) throw ApiError.badRequest('Proveedor invalido');
+  if (!prov[0]) throw ApiError.badRequest('Proveedor inválido');
 
   const orderId = await withTransaction(async (conn) => {
     const [r] = await conn.execute(
@@ -107,7 +107,7 @@ export const create = asyncHandler(async (req, res) => {
       if (it.destinationBranchId) {
         const [b] = await conn.execute('SELECT administrator_id FROM branches WHERE id=:id', { id: it.destinationBranchId });
         if (!b[0] || b[0].administrator_id !== req.user.id)
-          throw ApiError.badRequest('Sucursal destino invalida');
+          throw ApiError.badRequest('Sucursal destino inválida');
       }
       await conn.execute(
         `INSERT INTO order_details (order_id, item_id, destination_branch_id, requested_quantity, observations)
@@ -146,7 +146,7 @@ export const cancel = asyncHandler(async (req, res) => {
 export const updateStatus = asyncHandler(async (req, res) => {
   const order = await fetchOrderScoped(req, req.params.id);
   const { status, observations, items } = req.body;
-  if (!STATUS.includes(status)) throw ApiError.badRequest('Estado invalido');
+  if (!STATUS.includes(status)) throw ApiError.badRequest('Estado inválido');
 
   // Solo el proveedor (o sysadmin) cambia el estado operativo.
   if (req.user.role === ROLES.ADMIN) throw ApiError.forbidden('El administrador no actualiza el estado');
@@ -154,7 +154,7 @@ export const updateStatus = asyncHandler(async (req, res) => {
   if (req.user.role === ROLES.PROVIDER) {
     const allowed = PROVIDER_TRANSITIONS[order.status] || [];
     if (!allowed.includes(status))
-      throw ApiError.badRequest(`Transicion no permitida de "${order.status}" a "${status}"`);
+      throw ApiError.badRequest(`Transición no permitida de "${order.status}" a "${status}"`);
   }
 
   const deliversStock = status === 'delivered' || status === 'partial';

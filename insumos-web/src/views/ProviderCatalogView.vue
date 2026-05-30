@@ -13,7 +13,7 @@ export default {
       rows: [], loading: true,
       columns: [
         { key: 'name', label: 'Insumo' },
-        { key: 'category', label: 'Categoria' },
+        { key: 'category', label: 'Categoría' },
         { key: 'available', label: 'Stock disponible', align: 'right' },
         { key: 'unit', label: 'Unidad' },
         { key: 'status', label: 'Estado' },
@@ -80,17 +80,17 @@ export default {
           <div v-if="errors.name" class="field-error">{{ errors.name }}</div>
         </div>
         <div class="field">
-          <label>Categoria</label>
+          <label>Categoría</label>
           <select v-model="form.categoryId" class="select">
-            <option value="">Sin categoria</option>
+            <option value="">Sin categoría</option>
             <option v-for="c in categories" :key="c.id" :value="c.id">{{ c.name }}</option>
           </select>
         </div>
         <div class="field"><label>Unidad</label><input v-model="form.unit" class="input" /></div>
         <div class="field"><label>Stock disponible</label><input v-model.number="form.quantity" class="input" type="number" min="0" step="0.001" /></div>
-        <div class="field"><label>Stock minimo</label><input v-model.number="form.minimumStock" class="input" type="number" min="0" step="0.001" /></div>
+        <div class="field"><label>Stock mínimo</label><input v-model.number="form.minimumStock" class="input" type="number" min="0" step="0.001" /></div>
       </div>
-      <div class="field"><label>Descripcion</label><textarea v-model="form.description" class="textarea"></textarea></div>
+      <div class="field"><label>Descripción</label><textarea v-model="form.description" class="textarea"></textarea></div>
       <template #footer>
         <button class="btn" @click="showModal = false">Cancelar</button>
         <button class="btn btn-primary" :disabled="saving" @click="save"><span v-if="saving" class="spinner"></span> Guardar</button>

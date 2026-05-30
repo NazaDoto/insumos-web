@@ -66,7 +66,7 @@ export default {
 <template>
   <div>
     <div class="page-header">
-      <div><h1>Reportes</h1><p>Control y analisis de informacion</p></div>
+      <div><h1>Reportes</h1><p>Control y análisis de información</p></div>
       <button class="btn btn-success" :disabled="exporting || !rows.length" @click="exportExcel">
         <span v-if="exporting" class="spinner"></span> Exportar a Excel
       </button>
@@ -90,13 +90,13 @@ export default {
     <div class="card">
       <div v-if="loading" class="loading-center"><span class="spinner dark"></span></div>
       <div v-else class="table-wrap">
-        <table class="data">
+        <table class="data data-cards">
           <thead><tr><th v-for="c in columns" :key="c">{{ c.replace(/_/g, ' ').toUpperCase() }}</th></tr></thead>
           <tbody>
             <tr v-for="(r, i) in rows" :key="i">
-              <td v-for="c in columns" :key="c">{{ fmtVal(r[c]) }}</td>
+              <td v-for="c in columns" :key="c" :data-label="c.replace(/_/g, ' ')">{{ fmtVal(r[c]) }}</td>
             </tr>
-            <tr v-if="!rows.length"><td :colspan="columns.length || 1" class="table-empty">Sin datos para los filtros seleccionados</td></tr>
+            <tr v-if="!rows.length" class="empty-row"><td :colspan="columns.length || 1" class="table-empty empty-cell">Sin datos para los filtros seleccionados</td></tr>
           </tbody>
         </table>
       </div>

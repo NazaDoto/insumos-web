@@ -16,7 +16,7 @@ export default {
       categories: [],
       columns: [
         { key: 'name', label: 'Insumo' },
-        { key: 'category', label: 'Categoria' },
+        { key: 'category', label: 'Categoría' },
         { key: 'totalStock', label: 'Stock', align: 'right' },
         { key: 'unit', label: 'Unidad' },
         { key: 'status', label: 'Estado' },
@@ -65,7 +65,7 @@ export default {
     <div class="toolbar">
       <input v-model="filters.search" class="input search-input" placeholder="Buscar insumo..." @keyup.enter="onSearch" />
       <select v-model="filters.categoryId" class="select" style="max-width:200px" @change="onSearch">
-        <option value="">Todas las categorias</option>
+        <option value="">Todas las categorías</option>
         <option v-for="c in categories" :key="c.id" :value="c.id">{{ c.name }}</option>
       </select>
       <label class="row" style="gap:6px"><input type="checkbox" v-model="filters.lowStock" true-value="true" false-value="" @change="onSearch" /> Solo bajo stock</label>
@@ -92,7 +92,7 @@ export default {
     </DataTable>
 
     <ConfirmDialog v-if="confirm" danger title="Dar de baja insumo"
-      :message="`Desea desactivar el insumo \u201C${confirm.name}\u201D?`" confirm-text="Desactivar"
+      :message="`¿Desea desactivar el insumo \u201C${confirm.name}\u201D?`" confirm-text="Desactivar"
       :loading="deleting" @confirm="doDelete" @cancel="confirm = null" />
   </div>
 </template>

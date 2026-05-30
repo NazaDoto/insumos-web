@@ -78,27 +78,27 @@ export default {
         <button class="btn btn-sm" :disabled="!providerId || loadingItems" @click="addLine">+ Agregar insumo</button>
       </div>
 
-      <table class="data">
-        <thead><tr><th style="width:32%">Insumo</th><th style="width:14%">Cantidad</th><th style="width:26%">Sucursal destino</th><th>Observacion</th><th></th></tr></thead>
+      <table class="data data-cards stacked">
+        <thead><tr><th style="width:32%">Insumo</th><th style="width:14%">Cantidad</th><th style="width:26%">Sucursal destino</th><th>Observación</th><th></th></tr></thead>
         <tbody>
           <tr v-for="(l, i) in lines" :key="i">
-            <td>
+            <td data-label="Insumo">
               <select v-model="l.itemId" class="select">
                 <option value="">Seleccione...</option>
                 <option v-for="it in providerItems" :key="it.id" :value="it.id">{{ it.name }} (disp: {{ it.available }})</option>
               </select>
             </td>
-            <td><input v-model.number="l.requestedQuantity" class="input" type="number" min="0.001" step="0.001" /></td>
-            <td>
+            <td data-label="Cantidad"><input v-model.number="l.requestedQuantity" class="input" type="number" min="0.001" step="0.001" /></td>
+            <td data-label="Sucursal destino">
               <select v-model="l.destinationBranchId" class="select">
                 <option value="">Sin asignar</option>
                 <option v-for="b in branches" :key="b.id" :value="b.id">{{ b.name }}</option>
               </select>
             </td>
-            <td><input v-model="l.observations" class="input" /></td>
-            <td><button class="btn btn-sm btn-danger" @click="removeLine(i)">&times;</button></td>
+            <td data-label="Observación"><input v-model="l.observations" class="input" /></td>
+            <td data-label=""><button class="btn btn-sm btn-danger remove-line" @click="removeLine(i)"><span class="x">&times;</span><span class="lbl">Quitar insumo</span></button></td>
           </tr>
-          <tr v-if="!lines.length"><td colspan="5" class="table-empty">Agregue insumos al pedido</td></tr>
+          <tr v-if="!lines.length" class="empty-row"><td colspan="5" class="table-empty empty-cell">Agregue insumos al pedido</td></tr>
         </tbody>
       </table>
 

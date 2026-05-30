@@ -18,7 +18,7 @@ export default {
     </div>
     <template v-else>
       <div class="table-wrap">
-        <table class="data">
+        <table class="data data-cards">
           <thead>
             <tr>
               <th v-for="col in columns" :key="col.key" :style="{ width: col.width, textAlign: col.align }">
@@ -28,14 +28,14 @@ export default {
           </thead>
           <tbody>
             <tr v-for="row in rows" :key="row[rowKey]">
-              <td v-for="col in columns" :key="col.key" :style="{ textAlign: col.align }">
+              <td v-for="col in columns" :key="col.key" :style="{ textAlign: col.align }" :data-label="col.label">
                 <slot :name="'cell-' + col.key" :row="row" :value="row[col.key]">
                   {{ row[col.key] }}
                 </slot>
               </td>
             </tr>
-            <tr v-if="!rows.length">
-              <td :colspan="columns.length">
+            <tr v-if="!rows.length" class="empty-row">
+              <td :colspan="columns.length" class="empty-cell">
                 <div class="table-empty">{{ emptyText }}</div>
               </td>
             </tr>

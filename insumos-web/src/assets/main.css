@@ -193,12 +193,18 @@ table.data tbody tr:last-child td { border-bottom: none; }
 .content { padding: 24px; flex: 1; }
 
 .menu-toggle { display: none; }
+.sidebar-overlay { display: none; }
 @media (max-width: 900px) {
-  .sidebar { transform: translateX(-100%); transition: transform .2s; }
+  .sidebar { transform: translateX(-100%); transition: transform .22s ease; box-shadow: var(--shadow-lg); }
   .sidebar.open { transform: none; }
   .main { margin-left: 0; }
   .menu-toggle { display: inline-flex; }
+  .sidebar-overlay {
+    display: block; position: fixed; inset: 0; z-index: 45;
+    background: rgba(15, 23, 42, .5); animation: fadeIn .2s ease;
+  }
 }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
 /* ---------- Helpers ---------- */
 .page-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
@@ -215,6 +221,7 @@ table.data tbody tr:last-child td { border-bottom: none; }
 @media (max-width: 800px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
 .flex { display: flex; } .items-center { align-items: center; } .gap-2 { gap: 8px; } .gap-3 { gap: 12px; }
 .actions { display: flex; gap: 6px; }
+.remove-line .lbl { display: none; }
 
 .search-input { min-width: 220px; }
 .pagination { display: flex; gap: 6px; align-items: center; justify-content: flex-end; padding: 14px; }
@@ -231,3 +238,122 @@ table.data tbody tr:last-child td { border-bottom: none; }
 .login-card .login-logo { width: 54px; height: 54px; border-radius: 14px; background: var(--c-primary); display: grid; place-items: center; color: #fff; font-size: 26px; margin: 0 auto 16px; }
 .login-card h1 { text-align: center; font-size: 22px; margin-bottom: 4px; }
 .login-card .sub { text-align: center; color: var(--c-muted); margin-bottom: 26px; font-size: 13.5px; }
+
+/* ============================================================
+   OPTIMIZACIÓN MÓVIL (admin / empleado / proveedor)
+   Solo aplica en pantallas chicas; el escritorio no cambia.
+   ============================================================ */
+@media (max-width: 768px) {
+  /* --- Densidad general --- */
+  .content { padding: 14px 13px 32px; }
+  body { font-size: 14.5px; }
+
+  /* --- Topbar más compacta y con accesos grandes --- */
+  .topbar { height: 56px; padding: 0 12px; gap: 8px; }
+  .topbar .page-title { font-size: 16px; }
+  .topbar .user-chip { gap: 6px; }
+  .topbar .user-chip .user-meta { display: none; }
+  .menu-toggle { font-size: 22px; padding: 6px 10px; }
+
+  /* --- Sidebar a ancho casi completo para tocar cómodo --- */
+  .sidebar { width: min(82vw, 300px); --sidebar-w: min(82vw, 300px); }
+  .sidebar a.nav-link { padding: 13px 14px; font-size: 15px; }
+  .sidebar .nav-section { padding: 16px 14px 6px; }
+
+  /* --- Encabezado de página: acciones a ancho completo --- */
+  .page-header { gap: 10px; margin-bottom: 16px; }
+  .page-header h1 { font-size: 19px; }
+  .page-header > .row,
+  .page-header > .actions { width: 100%; }
+  .page-header .btn,
+  .page-header .row > .btn { flex: 1 1 auto; }
+
+  /* --- Toolbars / filtros apilados y a ancho completo --- */
+  .toolbar { gap: 8px; }
+  .toolbar > * { flex: 1 1 100%; min-width: 0; max-width: none !important; }
+  .toolbar .spacer { display: none; }
+  .search-input { min-width: 0; width: 100%; }
+  .toolbar .btn { flex: 1 1 100%; }
+
+  /* --- Inputs más altos para dedo (evita zoom en iOS con 16px) --- */
+  .input, .select, .textarea { font-size: 16px; padding: 12px 13px; }
+  .btn { padding: 11px 16px; font-size: 14px; }
+  .btn-sm { padding: 9px 12px; font-size: 13px; }
+
+  /* --- Tablas como tarjetas --- */
+  table.data-cards thead { display: none; }
+  table.data-cards,
+  table.data-cards tbody,
+  table.data-cards tr,
+  table.data-cards td { display: block; width: 100%; }
+  .table-wrap { overflow-x: visible; }
+  table.data-cards tr {
+    border: 1px solid var(--c-border); border-radius: var(--radius-sm);
+    margin-bottom: 12px; padding: 4px 2px; background: #fff;
+  }
+  table.data-cards tbody tr:hover { background: #fff; }
+  table.data-cards tbody tr:last-child td { border-bottom: 1px solid #f1f5f9; }
+  table.data-cards td {
+    border: none; border-bottom: 1px solid #f1f5f9; padding: 10px 14px;
+    display: flex; align-items: center; justify-content: space-between; gap: 14px;
+    text-align: right; min-height: 44px;
+  }
+  table.data-cards td:last-child { border-bottom: none; }
+  table.data-cards td::before {
+    content: attr(data-label); flex: 0 0 38%; text-align: left;
+    font-weight: 600; color: var(--c-muted); font-size: 11px;
+    text-transform: uppercase; letter-spacing: .03em;
+  }
+  /* Celdas sin etiqueta (acciones, selección) ocupan toda la fila */
+  table.data-cards td[data-label=""] { justify-content: flex-end; }
+  table.data-cards td[data-label=""]::before { display: none; }
+  /* Acciones cómodas y envolventes dentro de la tarjeta */
+  table.data-cards .actions { flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+  table.data-cards .actions .btn { flex: 1 1 auto; min-width: 88px; }
+  /* Fila vacía centrada */
+  table.data-cards tr.empty-row { border: none; background: transparent; }
+  table.data-cards td.empty-cell { display: block; text-align: center; border: none; }
+  table.data-cards td.empty-cell::before { display: none; }
+
+  /* Variante "stacked": etiqueta arriba y control a lo ancho (formularios) */
+  table.data-cards.stacked td { flex-direction: column; align-items: stretch; text-align: left; gap: 6px; }
+  table.data-cards.stacked td::before { flex: none; margin-bottom: 2px; }
+  table.data-cards.stacked td .select,
+  table.data-cards.stacked td .input { width: 100% !important; }
+  .remove-line { width: 100%; }
+  .remove-line .x { display: none; }
+  .remove-line .lbl { display: inline; }
+
+  /* --- Paginación a lo ancho y táctil --- */
+  .pagination { justify-content: center; flex-wrap: wrap; padding: 12px; gap: 8px; }
+  .pagination button { min-width: 42px; min-height: 40px; }
+
+  /* --- Stats: 2 por fila en celulares --- */
+  .stat-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .stat { padding: 14px; }
+  .stat .stat-value { font-size: 22px; }
+  .stat .stat-label { font-size: 11px; }
+
+  /* --- Modales casi a pantalla completa --- */
+  .modal-backdrop { padding: 0; align-items: flex-end; }
+  .modal { max-width: 100%; border-radius: 16px 16px 0 0; margin: 0; max-height: 92vh; overflow-y: auto; }
+  .modal.lg { max-width: 100%; }
+  .modal-header { padding: 16px; position: sticky; top: 0; background: #fff; z-index: 1; }
+  .modal-body { padding: 16px; }
+  .modal-footer { padding: 14px 16px; flex-direction: column; gap: 8px; position: sticky; bottom: 0; background: #fff; }
+  .modal-footer .btn { width: 100%; }
+
+  /* --- Cards con menos padding --- */
+  .card-pad { padding: 16px; }
+  .card-header { padding: 14px 16px; }
+
+  /* --- Toasts a lo ancho arriba --- */
+  .toast-container { top: 10px; right: 10px; left: 10px; }
+  .toast { min-width: 0; max-width: 100%; }
+}
+
+/* Celulares muy chicos: 1 stat por fila */
+@media (max-width: 380px) {
+  .stat-grid { grid-template-columns: 1fr; }
+  table.data-cards td::before { flex-basis: 42%; }
+}

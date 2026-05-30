@@ -143,7 +143,7 @@ export default {
       </div>
 
       <div class="field">
-        <label>Motivo / Observacion</label>
+        <label>Motivo / Observación</label>
         <input v-model="form.reason" class="input" />
       </div>
 

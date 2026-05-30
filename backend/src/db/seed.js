@@ -35,7 +35,7 @@ async function ensureCategories(adminId) {
       );
     }
   }
-  console.log('[seed] categorias base aseguradas');
+  console.log('[seed] categorías base aseguradas');
 }
 
 async function main() {

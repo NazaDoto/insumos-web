@@ -18,7 +18,7 @@ export default {
         { key: 'item_name', label: 'Insumo' },
         { key: 'branch_name', label: 'Sucursal' },
         { key: 'quantity', label: 'Cantidad', align: 'right' },
-        { key: 'minimum_stock', label: 'Minimo', align: 'right' },
+        { key: 'minimum_stock', label: 'Mínimo', align: 'right' },
         { key: 'state', label: 'Estado' },
       ],
       showModal: false, saving: false,
@@ -157,7 +157,7 @@ export default {
       </div>
 
       <div class="field">
-        <label>Motivo / Observacion</label>
+        <label>Motivo / Observación</label>
         <input v-model="form.reason" class="input" />
       </div>
 

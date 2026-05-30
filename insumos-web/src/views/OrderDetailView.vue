@@ -91,7 +91,7 @@ export default {
 
       <div class="grid-2 mb-4">
         <div class="card card-pad">
-          <h3 class="mb-4">Informacion</h3>
+          <h3 class="mb-4">Información</h3>
           <div class="row" style="justify-content:space-between;padding:6px 0"><span class="muted">Fecha</span><span>{{ date(order.created_at) }}</span></div>
           <div class="row" style="justify-content:space-between;padding:6px 0"><span class="muted">Obs. administrador</span><span>{{ order.admin_observations || '-' }}</span></div>
           <div class="row" style="justify-content:space-between;padding:6px 0"><span class="muted">Obs. proveedor</span><span>{{ order.provider_observations || '-' }}</span></div>
@@ -109,16 +109,16 @@ export default {
       <div class="card">
         <div class="card-header"><h3>Insumos solicitados</h3></div>
         <div class="table-wrap">
-          <table class="data">
+          <table class="data data-cards">
             <thead><tr><th>Insumo</th><th class="text-right">Solicitado</th><th class="text-right">Aprobado</th><th class="text-right">Entregado</th><th>Destino</th><th>Obs.</th></tr></thead>
             <tbody>
               <tr v-for="d in order.details" :key="d.id">
-                <td style="font-weight:550">{{ d.item_name }}</td>
-                <td class="text-right">{{ d.requested_quantity }} {{ d.unit }}</td>
-                <td class="text-right">{{ d.approved_quantity ?? '-' }}</td>
-                <td class="text-right">{{ d.delivered_quantity ?? '-' }}</td>
-                <td>{{ d.destination_branch || '-' }}</td>
-                <td class="muted">{{ d.observations || '-' }}</td>
+                <td style="font-weight:550" data-label="Insumo">{{ d.item_name }}</td>
+                <td class="text-right" data-label="Solicitado">{{ d.requested_quantity }} {{ d.unit }}</td>
+                <td class="text-right" data-label="Aprobado">{{ d.approved_quantity ?? '-' }}</td>
+                <td class="text-right" data-label="Entregado">{{ d.delivered_quantity ?? '-' }}</td>
+                <td data-label="Destino">{{ d.destination_branch || '-' }}</td>
+                <td class="muted" data-label="Obs.">{{ d.observations || '-' }}</td>
               </tr>
             </tbody>
           </table>
@@ -128,14 +128,14 @@ export default {
       <BaseModal v-if="statusModal" large :title="`Actualizar pedido a: ${statusEs(newStatus)}`" @close="statusModal = false">
         <div v-if="deliversStock" class="mb-4">
           <p class="muted mb-4">Confirme las cantidades entregadas. El stock del administrador se actualizara automaticamente.</p>
-          <table class="data">
+          <table class="data data-cards stacked">
             <thead><tr><th>Insumo</th><th>Solicitado</th><th>Aprobado</th><th>Entregado</th></tr></thead>
             <tbody>
               <tr v-for="l in editLines" :key="l.id">
-                <td>{{ l.name }}</td>
-                <td>{{ l.requested }}</td>
-                <td><input v-model.number="l.approvedQuantity" class="input" type="number" min="0" step="0.001" style="width:100px" /></td>
-                <td><input v-model.number="l.deliveredQuantity" class="input" type="number" min="0" step="0.001" style="width:100px" /></td>
+                <td style="font-weight:550" data-label="Insumo">{{ l.name }}</td>
+                <td data-label="Solicitado">{{ l.requested }}</td>
+                <td data-label="Aprobado"><input v-model.number="l.approvedQuantity" class="input" type="number" min="0" step="0.001" style="width:100px" /></td>
+                <td data-label="Entregado"><input v-model.number="l.deliveredQuantity" class="input" type="number" min="0" step="0.001" style="width:100px" /></td>
               </tr>
             </tbody>
           </table>
@@ -151,7 +151,7 @@ export default {
       </BaseModal>
 
       <ConfirmDialog v-if="confirmCancel" danger title="Cancelar pedido"
-        message="Esta seguro de cancelar este pedido?" confirm-text="Si, cancelar" :loading="cancelling"
+        message="¿Está seguro de cancelar este pedido?" confirm-text="Sí, cancelar" :loading="cancelling"
         @confirm="doCancel" @cancel="confirmCancel = false" />
     </template>
   </div>

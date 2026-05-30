@@ -1,4 +1,4 @@
-// Normaliza parametros de paginacion y devuelve limit/offset seguros.
+// Normaliza parámetros de paginacion y devuelve limit/offset seguros.
 export function getPagination(query) {
   let page = parseInt(query.page, 10);
   let limit = parseInt(query.limit, 10);

@@ -69,16 +69,16 @@ export default {
         <div v-if="data.recentOrders" class="card">
           <div class="card-header"><h3>Pedidos recientes</h3><RouterLink to="/orders" class="btn btn-sm">Ver todos</RouterLink></div>
           <div class="table-wrap">
-            <table class="data">
+            <table class="data data-cards">
               <thead><tr><th>#</th><th>Contraparte</th><th>Estado</th><th>Fecha</th></tr></thead>
               <tbody>
                 <tr v-for="o in data.recentOrders" :key="o.id">
-                  <td>#{{ o.id }}</td>
-                  <td>{{ o.provider_name || o.admin_name }}</td>
-                  <td><StatusBadge :status="o.status" /></td>
-                  <td class="muted">{{ date(o.created_at) }}</td>
+                  <td data-label="#">#{{ o.id }}</td>
+                  <td data-label="Contraparte">{{ o.provider_name || o.admin_name }}</td>
+                  <td data-label="Estado"><StatusBadge :status="o.status" /></td>
+                  <td class="muted" data-label="Fecha">{{ date(o.created_at) }}</td>
                 </tr>
-                <tr v-if="!data.recentOrders.length"><td colspan="4" class="table-empty">Sin pedidos</td></tr>
+                <tr v-if="!data.recentOrders.length" class="empty-row"><td colspan="4" class="table-empty empty-cell">Sin pedidos</td></tr>
               </tbody>
             </table>
           </div>
@@ -87,16 +87,16 @@ export default {
         <div v-if="data.recentMovements" class="card">
           <div class="card-header"><h3>Movimientos recientes</h3></div>
           <div class="table-wrap">
-            <table class="data">
+            <table class="data data-cards">
               <thead><tr><th>Insumo</th><th>Tipo</th><th>Cant.</th><th>Fecha</th></tr></thead>
               <tbody>
                 <tr v-for="m in data.recentMovements" :key="m.id">
-                  <td>{{ m.item_name }}</td>
-                  <td><StatusBadge :status="m.movement_type" /></td>
-                  <td>{{ fmt(m.quantity) }}</td>
-                  <td class="muted">{{ date(m.created_at) }}</td>
+                  <td data-label="Insumo">{{ m.item_name }}</td>
+                  <td data-label="Tipo"><StatusBadge :status="m.movement_type" /></td>
+                  <td data-label="Cant.">{{ fmt(m.quantity) }}</td>
+                  <td class="muted" data-label="Fecha">{{ date(m.created_at) }}</td>
                 </tr>
-                <tr v-if="!data.recentMovements.length"><td colspan="4" class="table-empty">Sin movimientos</td></tr>
+                <tr v-if="!data.recentMovements.length" class="empty-row"><td colspan="4" class="table-empty empty-cell">Sin movimientos</td></tr>
               </tbody>
             </table>
           </div>
@@ -105,15 +105,15 @@ export default {
         <div v-if="data.lowStockItems" class="card">
           <div class="card-header"><h3>Alertas de bajo stock</h3></div>
           <div class="table-wrap">
-            <table class="data">
+            <table class="data data-cards">
               <thead><tr><th>Insumo</th><th>Sucursal</th><th>Cant.</th><th>Min.</th></tr></thead>
               <tbody>
                 <tr v-for="(it, i) in data.lowStockItems" :key="i">
-                  <td>{{ it.name }}</td><td>{{ it.branch }}</td>
-                  <td style="color:var(--c-danger);font-weight:600">{{ fmt(it.quantity) }}</td>
-                  <td>{{ fmt(it.minimum_stock) }}</td>
+                  <td data-label="Insumo">{{ it.name }}</td><td data-label="Sucursal">{{ it.branch }}</td>
+                  <td style="color:var(--c-danger);font-weight:600" data-label="Cant.">{{ fmt(it.quantity) }}</td>
+                  <td data-label="Min.">{{ fmt(it.minimum_stock) }}</td>
                 </tr>
-                <tr v-if="!data.lowStockItems.length"><td colspan="4" class="table-empty">Todo en orden</td></tr>
+                <tr v-if="!data.lowStockItems.length" class="empty-row"><td colspan="4" class="table-empty empty-cell">Todo en orden</td></tr>
               </tbody>
             </table>
           </div>
@@ -131,32 +131,32 @@ export default {
         </div>
 
         <div v-if="data.recentUsages" class="card">
-          <div class="card-header"><h3>Mis ultimos usos</h3><RouterLink to="/usage" class="btn btn-sm">Ver historial</RouterLink></div>
+          <div class="card-header"><h3>Mis últimos usos</h3><RouterLink to="/usage" class="btn btn-sm">Ver historial</RouterLink></div>
           <div class="table-wrap">
-            <table class="data">
+            <table class="data data-cards">
               <thead><tr><th>Insumo</th><th>Sucursal</th><th>Cant.</th><th>Fecha</th></tr></thead>
               <tbody>
                 <tr v-for="u in data.recentUsages" :key="u.id">
-                  <td>{{ u.item_name }}</td><td>{{ u.branch_name }}</td>
-                  <td>{{ fmt(u.quantity) }}</td><td class="muted">{{ date(u.created_at) }}</td>
+                  <td data-label="Insumo">{{ u.item_name }}</td><td data-label="Sucursal">{{ u.branch_name }}</td>
+                  <td data-label="Cant.">{{ fmt(u.quantity) }}</td><td class="muted" data-label="Fecha">{{ date(u.created_at) }}</td>
                 </tr>
-                <tr v-if="!data.recentUsages.length"><td colspan="4" class="table-empty">Sin registros</td></tr>
+                <tr v-if="!data.recentUsages.length" class="empty-row"><td colspan="4" class="table-empty empty-cell">Sin registros</td></tr>
               </tbody>
             </table>
           </div>
         </div>
 
         <div v-if="data.recentLogs" class="card">
-          <div class="card-header"><h3>Ultima actividad</h3><RouterLink to="/logs" class="btn btn-sm">Ver logs</RouterLink></div>
+          <div class="card-header"><h3>Última actividad</h3><RouterLink to="/logs" class="btn btn-sm">Ver logs</RouterLink></div>
           <div class="table-wrap">
-            <table class="data">
-              <thead><tr><th>Usuario</th><th>Accion</th><th>Modulo</th><th>Fecha</th></tr></thead>
+            <table class="data data-cards">
+              <thead><tr><th>Usuario</th><th>Acción</th><th>Módulo</th><th>Fecha</th></tr></thead>
               <tbody>
                 <tr v-for="l in data.recentLogs" :key="l.id">
-                  <td>{{ l.user_name || '-' }}</td><td>{{ l.action }}</td>
-                  <td>{{ l.module }}</td><td class="muted">{{ date(l.created_at) }}</td>
+                  <td data-label="Usuario">{{ l.user_name || '-' }}</td><td data-label="Acción">{{ l.action }}</td>
+                  <td data-label="Módulo">{{ l.module }}</td><td class="muted" data-label="Fecha">{{ date(l.created_at) }}</td>
                 </tr>
-                <tr v-if="!data.recentLogs.length"><td colspan="4" class="table-empty">Sin actividad</td></tr>
+                <tr v-if="!data.recentLogs.length" class="empty-row"><td colspan="4" class="table-empty empty-cell">Sin actividad</td></tr>
               </tbody>
             </table>
           </div>

@@ -13,7 +13,7 @@ export default {
       columns: [
         { key: 'name', label: 'Proveedor' },
         { key: 'email', label: 'Email' },
-        { key: 'phone', label: 'Telefono' },
+        { key: 'phone', label: 'Teléfono' },
         { key: 'items_count', label: 'Insumos', align: 'right' },
         { key: 'actions', label: '', align: 'right' },
       ],
@@ -58,16 +58,16 @@ export default {
 
     <BaseModal v-if="catalog" large :title="`Catalogo de ${catalog.first_name} ${catalog.last_name}`" @close="catalog = null">
       <div v-if="catalogLoading" class="loading-center"><span class="spinner dark"></span></div>
-      <table v-else class="data">
-        <thead><tr><th>Insumo</th><th>Categoria</th><th>Unidad</th><th class="text-right">Disponible</th></tr></thead>
+      <table v-else class="data data-cards">
+        <thead><tr><th>Insumo</th><th>Categoría</th><th>Unidad</th><th class="text-right">Disponible</th></tr></thead>
         <tbody>
           <tr v-for="i in catalogItems" :key="i.id">
-            <td style="font-weight:550">{{ i.name }}</td>
-            <td>{{ i.category || '-' }}</td>
-            <td>{{ i.unit }}</td>
-            <td class="text-right">{{ i.available }}</td>
+            <td style="font-weight:550" data-label="Insumo">{{ i.name }}</td>
+            <td data-label="Categoría">{{ i.category || '-' }}</td>
+            <td data-label="Unidad">{{ i.unit }}</td>
+            <td class="text-right" data-label="Disponible">{{ i.available }}</td>
           </tr>
-          <tr v-if="!catalogItems.length"><td colspan="4" class="table-empty">Sin insumos publicados</td></tr>
+          <tr v-if="!catalogItems.length" class="empty-row"><td colspan="4" class="table-empty empty-cell">Sin insumos publicados</td></tr>
         </tbody>
       </table>
       <template #footer>

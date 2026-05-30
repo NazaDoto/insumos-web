@@ -19,7 +19,7 @@ export function authorize(...roles) {
         module: req.baseUrl || 'unknown',
         newValue: { path: req.originalUrl, method: req.method },
       });
-      return next(ApiError.forbidden('No tiene permisos para esta accion'));
+      return next(ApiError.forbidden('No tiene permisos para esta acción'));
     }
     next();
   };

@@ -13,7 +13,7 @@ export default {
       customValues: {},
       conditions: [
         { v: 'available', l: 'Disponible' }, { v: 'in_use', l: 'En uso' }, { v: 'repair', l: 'En reparacion' },
-        { v: 'damaged', l: 'Danado' }, { v: 'reserved', l: 'Reservado' }, { v: 'retired', l: 'Dado de baja' },
+        { v: 'damaged', l: 'Dañado' }, { v: 'reserved', l: 'Reservado' }, { v: 'retired', l: 'Dado de baja' },
       ],
       errors: {},
     }
@@ -87,9 +87,9 @@ export default {
           <div v-if="errors.name" class="field-error">{{ errors.name }}</div>
         </div>
         <div class="field">
-          <label>Categoria</label>
+          <label>Categoría</label>
           <select v-model="form.categoryId" class="select">
-            <option value="">Sin categoria</option>
+            <option value="">Sin categoría</option>
             <option v-for="c in categories" :key="c.id" :value="c.id">{{ c.name }}</option>
           </select>
         </div>
@@ -98,7 +98,7 @@ export default {
           <input v-model="form.unit" class="input" placeholder="unidad, caja, litro..." />
         </div>
         <div class="field">
-          <label>Stock minimo</label>
+          <label>Stock mínimo</label>
           <input v-model.number="form.minimumStock" class="input" type="number" min="0" step="0.001" />
         </div>
         <div class="field">
@@ -109,7 +109,7 @@ export default {
         </div>
       </div>
       <div class="field">
-        <label>Descripcion</label>
+        <label>Descripción</label>
         <textarea v-model="form.description" class="textarea"></textarea>
       </div>
 

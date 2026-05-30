@@ -1,7 +1,7 @@
 import ApiError from '../utils/ApiError.js';
 
 /**
- * Obtiene la cantidad actual de stock para item en una ubicacion (oficina o proveedor).
+ * Obtiene la cantidad actual de stock para item en una ubicación (oficina o proveedor).
  * Usa FOR UPDATE para bloquear la fila dentro de la transaccion.
  */
 export async function getStockQty(conn, { itemId, branchId = null, providerId = null }) {

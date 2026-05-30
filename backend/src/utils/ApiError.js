@@ -6,7 +6,7 @@ export default class ApiError extends Error {
     this.isOperational = true;
   }
 
-  static badRequest(msg = 'Solicitud invalida', details = null) {
+  static badRequest(msg = 'Solicitud inválida', details = null) {
     return new ApiError(400, msg, details);
   }
 

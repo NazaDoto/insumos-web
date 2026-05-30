@@ -37,7 +37,7 @@ export const login = asyncHandler(async (req, res) => {
       module: 'auth',
       newValue: { identifier },
     });
-    throw ApiError.unauthorized('Credenciales invalidas');
+    throw ApiError.unauthorized('Credenciales inválidas');
   }
 
   if (user.status !== 'active') {
@@ -62,9 +62,9 @@ export const me = asyncHandler(async (req, res) => {
 });
 
 export const logout = asyncHandler(async (req, res) => {
-  // Con JWT stateless el logout se maneja en el cliente; registramos la accion.
+  // Con JWT stateless el logout se maneja en el cliente; registramos la acción.
   await writeLog({ ...reqMeta(req), action: 'logout', module: 'auth' });
-  res.json({ success: true, message: 'Sesion cerrada' });
+  res.json({ success: true, message: 'Sesión cerrada' });
 });
 
 export const changePassword = asyncHandler(async (req, res) => {
@@ -74,7 +74,7 @@ export const changePassword = asyncHandler(async (req, res) => {
     id: req.user.id,
   });
   const ok = await comparePassword(currentPassword, rows[0].password_hash);
-  if (!ok) throw ApiError.badRequest('La contrasena actual es incorrecta');
+  if (!ok) throw ApiError.badRequest('La contraseña actual es incorrecta');
 
   const hash = await hashPassword(newPassword);
   await pool.execute('UPDATE users SET password_hash = :hash WHERE id = :id', {
@@ -83,5 +83,5 @@ export const changePassword = asyncHandler(async (req, res) => {
   });
 
   await writeLog({ ...reqMeta(req), action: 'change_password', module: 'auth', recordId: req.user.id });
-  res.json({ success: true, message: 'Contrasena actualizada' });
+  res.json({ success: true, message: 'Contraseña actualizada' });
 });

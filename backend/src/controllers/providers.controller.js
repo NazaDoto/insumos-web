@@ -45,7 +45,7 @@ export const providerItems = asyncHandler(async (req, res) => {
   res.json({ success: true, data: rows });
 });
 
-// --- Gestion del proveedor sobre su propio catalogo ---
+// --- Gestión del proveedor sobre su propio catalogo ---
 
 export const myItems = asyncHandler(async (req, res) => {
   const [rows] = await pool.execute(

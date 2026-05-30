@@ -123,7 +123,7 @@ export const update = asyncHandler(async (req, res) => {
   const existing = await fetchUserScoped(req, req.params.id);
   const { firstName, lastName, email, username, phone } = req.body;
 
-  // El rol no puede modificarse aqui (proteccion contra escalada de privilegios),
+  // El rol no puede modificarse aquí (proteccion contra escalada de privilegios),
   // salvo sysadmin explicitamente.
   let role = existing.role;
   if (req.user.role === ROLES.SYSADMIN && req.body.role) role = req.body.role;
@@ -165,7 +165,7 @@ export const setStatus = asyncHandler(async (req, res) => {
 export const remove = asyncHandler(async (req, res) => {
   const existing = await fetchUserScoped(req, req.params.id);
   if (existing.id === req.user.id) throw ApiError.badRequest('No puede eliminar su propio usuario');
-  // Se recomienda desactivar; aqui desactivamos para preservar historial.
+  // Se recomienda desactivar; aquí desactivamos para preservar historial.
   await pool.execute("UPDATE users SET status='inactive' WHERE id=:id", { id: existing.id });
   await writeLog({ ...reqMeta(req), action: 'deactivate', module: 'users', recordId: existing.id });
   res.json({ success: true, message: 'Usuario desactivado' });

@@ -9,7 +9,7 @@ const MODULES = [
   { v: 'branches', l: 'Sucursales' }, { v: 'orders', l: 'Pedidos' }, { v: 'movements', l: 'Movimientos' },
 ]
 const TYPES = [
-  { v: 'text', l: 'Texto corto' }, { v: 'textarea', l: 'Texto largo' }, { v: 'number', l: 'Numero' },
+  { v: 'text', l: 'Texto corto' }, { v: 'textarea', l: 'Texto largo' }, { v: 'number', l: 'Número' },
   { v: 'date', l: 'Fecha' }, { v: 'boolean', l: 'Si/No' }, { v: 'select', l: 'Lista desplegable' },
 ]
 
@@ -22,7 +22,7 @@ export default {
       MODULES, TYPES,
       columns: [
         { key: 'field_label', label: 'Etiqueta' },
-        { key: 'module', label: 'Modulo' },
+        { key: 'module', label: 'Módulo' },
         { key: 'field_type', label: 'Tipo' },
         { key: 'is_required', label: 'Obligatorio' },
         { key: 'is_active', label: 'Activo' },
@@ -73,13 +73,13 @@ export default {
 <template>
   <div>
     <div class="page-header">
-      <div><h1>Atributos personalizados</h1><p>Define campos dinamicos sin tocar el codigo</p></div>
+      <div><h1>Atributos personalizados</h1><p>Define campos dinamicos sin tocar el código</p></div>
       <button class="btn btn-primary" @click="openCreate">+ Nuevo atributo</button>
     </div>
 
     <div class="toolbar">
       <select v-model="moduleFilter" class="select" style="max-width:200px" @change="load">
-        <option value="">Todos los modulos</option>
+        <option value="">Todos los módulos</option>
         <option v-for="m in MODULES" :key="m.v" :value="m.v">{{ m.l }}</option>
       </select>
     </div>
@@ -102,7 +102,7 @@ export default {
     <BaseModal v-if="showModal" :title="form.id ? 'Editar atributo' : 'Nuevo atributo'" @close="showModal = false">
       <div class="form-grid">
         <div class="field">
-          <label>Modulo <span class="req">*</span></label>
+          <label>Módulo <span class="req">*</span></label>
           <select v-model="form.module" class="select" :disabled="!!form.id">
             <option v-for="m in MODULES" :key="m.v" :value="m.v">{{ m.l }}</option>
           </select>

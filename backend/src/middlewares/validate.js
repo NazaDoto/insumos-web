@@ -29,7 +29,7 @@ export function validateBody(schema) {
       if (rules.type === 'number') {
         const n = Number(value);
         if (Number.isNaN(n)) {
-          errors[field] = 'Debe ser un numero';
+          errors[field] = 'Debe ser un número';
           continue;
         }
         data[field] = n;
@@ -52,20 +52,20 @@ export function validateBody(schema) {
 
       if (rules.email) {
         const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!re.test(value)) errors[field] = 'Email invalido';
+        if (!re.test(value)) errors[field] = 'Email inválido';
       }
 
       if (rules.minLength && String(value).length < rules.minLength)
-        errors[field] = `Minimo ${rules.minLength} caracteres`;
+        errors[field] = `Mínimo ${rules.minLength} caracteres`;
       if (rules.maxLength && String(value).length > rules.maxLength)
-        errors[field] = `Maximo ${rules.maxLength} caracteres`;
+        errors[field] = `Máximo ${rules.maxLength} caracteres`;
 
       if (rules.enum && !rules.enum.includes(value))
-        errors[field] = `Valor invalido. Permitidos: ${rules.enum.join(', ')}`;
+        errors[field] = `Valor inválido. Permitidos: ${rules.enum.join(', ')}`;
     }
 
     if (Object.keys(errors).length) {
-      return next(ApiError.badRequest('Datos invalidos', errors));
+      return next(ApiError.badRequest('Datos inválidos', errors));
     }
     req.body = data;
     next();

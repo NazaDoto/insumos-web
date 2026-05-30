@@ -5,11 +5,11 @@ import { useUiStore } from '@/stores/ui'
 
 const NAV = [
   { to: '/dashboard', label: 'Dashboard', ico: '\u25A0', roles: ['sysadmin', 'admin', 'provider', 'employee'] },
-  { section: 'Gestion' },
+  { section: 'Gestión' },
   { to: '/users', label: 'Usuarios', ico: '\u{1F465}', roles: ['sysadmin', 'admin'] },
   { to: '/items', label: 'Insumos', ico: '\u{1F4E6}', roles: ['sysadmin', 'admin'] },
   { to: '/catalog', label: 'Mi stock', ico: '\u{1F4E6}', roles: ['provider'] },
-  { to: '/categories', label: 'Categorias', ico: '\u{1F3F7}', roles: ['sysadmin', 'admin', 'provider'] },
+  { to: '/categories', label: 'Categorías', ico: '\u{1F3F7}', roles: ['sysadmin', 'admin', 'provider'] },
   { to: '/branches', label: 'Oficinas / Sucursales', ico: '\u{1F3E2}', roles: ['sysadmin', 'admin', 'employee'] },
   { section: 'Operaciones' },
   { to: '/stock', label: 'Stock disponible', ico: '\u{1F4CA}', roles: ['sysadmin', 'admin', 'employee'] },
@@ -17,9 +17,9 @@ const NAV = [
   { to: '/providers', label: 'Proveedores', ico: '\u{1F69A}', roles: ['sysadmin', 'admin'] },
   { to: '/orders', label: 'Pedidos', ico: '\u{1F4CB}', roles: ['sysadmin', 'admin', 'provider'] },
   { to: '/usage', label: 'Uso de insumos', ico: '\u270D', roles: ['sysadmin', 'admin', 'employee'] },
-  { section: 'Analisis' },
+  { section: 'Análisis' },
   { to: '/reports', label: 'Reportes', ico: '\u{1F4C8}', roles: ['sysadmin', 'admin', 'provider'] },
-  { to: '/logs', label: 'Logs y auditoria', ico: '\u{1F50D}', roles: ['sysadmin', 'admin'] },
+  { to: '/logs', label: 'Logs y auditoría', ico: '\u{1F50D}', roles: ['sysadmin', 'admin'] },
   { to: '/custom-fields', label: 'Atributos personalizados', ico: '\u2699', roles: ['sysadmin', 'admin'] },
 ]
 
@@ -78,6 +78,7 @@ export default {
         </template>
       </nav>
     </aside>
+    <div v-if="sidebarOpen" class="sidebar-overlay" @click="closeSidebar"></div>
 
     <div class="main">
       <header class="topbar">
@@ -87,7 +88,7 @@ export default {
         </div>
         <div class="user-chip">
           <RouterLink to="/profile" class="flex items-center gap-2">
-            <div style="text-align:right">
+            <div class="user-meta" style="text-align:right">
               <div style="font-weight:600;font-size:13px">{{ fullName }}</div>
               <div class="muted" style="font-size:11.5px">{{ roleLabel }}</div>
             </div>

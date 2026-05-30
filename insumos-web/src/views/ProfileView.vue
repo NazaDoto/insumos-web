@@ -18,12 +18,12 @@ export default {
   methods: {
     async changePassword() {
       this.errors = {}
-      if (this.pwd.newPassword !== this.pwd.confirm) { this.errors.confirm = 'Las contrasenas no coinciden'; return }
-      if (this.pwd.newPassword.length < 6) { this.errors.newPassword = 'Minimo 6 caracteres'; return }
+      if (this.pwd.newPassword !== this.pwd.confirm) { this.errors.confirm = 'Las contraseñas no coinciden'; return }
+      if (this.pwd.newPassword.length < 6) { this.errors.newPassword = 'Mínimo 6 caracteres'; return }
       this.saving = true
       try {
         await api.put('/auth/change-password', { currentPassword: this.pwd.currentPassword, newPassword: this.pwd.newPassword })
-        useUiStore().success('Contrasena actualizada')
+        useUiStore().success('Contraseña actualizada')
         this.pwd = { currentPassword: '', newPassword: '', confirm: '' }
       } catch (e) { useUiStore().error(e.userMessage) } finally { this.saving = false }
     },
@@ -51,23 +51,23 @@ export default {
       </div>
 
       <div class="card card-pad">
-        <h3 class="mb-4">Cambiar contrasena</h3>
+        <h3 class="mb-4">Cambiar contraseña</h3>
         <form @submit.prevent="changePassword">
           <div class="field">
-            <label>Contrasena actual</label>
+            <label>Contraseña actual</label>
             <input v-model="pwd.currentPassword" class="input" type="password" />
           </div>
           <div class="field">
-            <label>Nueva contrasena</label>
+            <label>Nueva contraseña</label>
             <input v-model="pwd.newPassword" class="input" type="password" />
             <div v-if="errors.newPassword" class="field-error">{{ errors.newPassword }}</div>
           </div>
           <div class="field">
-            <label>Confirmar nueva contrasena</label>
+            <label>Confirmar nueva contraseña</label>
             <input v-model="pwd.confirm" class="input" type="password" />
             <div v-if="errors.confirm" class="field-error">{{ errors.confirm }}</div>
           </div>
-          <button class="btn btn-primary" type="submit" :disabled="saving"><span v-if="saving" class="spinner"></span> Actualizar contrasena</button>
+          <button class="btn btn-primary" type="submit" :disabled="saving"><span v-if="saving" class="spinner"></span> Actualizar contraseña</button>
         </form>
       </div>
     </div>

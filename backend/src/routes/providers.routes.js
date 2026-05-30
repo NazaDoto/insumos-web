@@ -9,7 +9,7 @@ providersRouter.get('/', authorize(ROLES.SYSADMIN, ROLES.ADMIN), ctrl.listProvid
 providersRouter.get('/:id', authorize(ROLES.SYSADMIN, ROLES.ADMIN), ctrl.getProvider);
 providersRouter.get('/:id/items', authorize(ROLES.SYSADMIN, ROLES.ADMIN), ctrl.providerItems);
 
-// Rutas de gestion del propio catalogo del proveedor.
+// Rutas de gestión del propio catalogo del proveedor.
 export const providerSelfRouter = Router();
 providerSelfRouter.get('/items', authorize(ROLES.PROVIDER), ctrl.myItems);
 providerSelfRouter.post(

@@ -5,7 +5,7 @@ import { ROLES } from '../middlewares/authorize.js';
 import { writeLog, reqMeta } from '../utils/audit.js';
 
 function ownerAdminId(req) {
-  // sysadmin crea categorias globales (NULL); admin y proveedor crean propias.
+  // sysadmin crea categorías globales (NULL); admin y proveedor crean propias.
   return req.user.role === ROLES.SYSADMIN ? null : req.user.id;
 }
 
@@ -36,10 +36,10 @@ export const create = asyncHandler(async (req, res) => {
 async function fetchScoped(req, id) {
   const [rows] = await pool.execute('SELECT * FROM item_categories WHERE id=:id', { id });
   const cat = rows[0];
-  if (!cat) throw ApiError.notFound('Categoria no encontrada');
-  // Admin y proveedor solo pueden modificar sus propias categorias (no las globales ni ajenas).
+  if (!cat) throw ApiError.notFound('Categoría no encontrada');
+  // Admin y proveedor solo pueden modificar sus propias categorías (no las globales ni ajenas).
   if (req.user.role !== ROLES.SYSADMIN && cat.administrator_id !== req.user.id) {
-    throw ApiError.forbidden('No puede modificar esta categoria');
+    throw ApiError.forbidden('No puede modificar esta categoría');
   }
   return cat;
 }
@@ -52,12 +52,12 @@ export const update = asyncHandler(async (req, res) => {
     { n: name ?? cat.name, d: description ?? cat.description, s: status ?? cat.status, id: cat.id }
   );
   await writeLog({ ...reqMeta(req), action: 'update', module: 'categories', recordId: cat.id });
-  res.json({ success: true, message: 'Categoria actualizada' });
+  res.json({ success: true, message: 'Categoría actualizada' });
 });
 
 export const remove = asyncHandler(async (req, res) => {
   const cat = await fetchScoped(req, req.params.id);
   await pool.execute("UPDATE item_categories SET status='inactive' WHERE id=:id", { id: cat.id });
   await writeLog({ ...reqMeta(req), action: 'deactivate', module: 'categories', recordId: cat.id });
-  res.json({ success: true, message: 'Categoria desactivada' });
+  res.json({ success: true, message: 'Categoría desactivada' });
 });

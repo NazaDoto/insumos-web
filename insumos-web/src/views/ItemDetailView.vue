@@ -33,7 +33,7 @@ export default {
     <div v-if="loading" class="loading-center"><span class="spinner dark"></span></div>
     <template v-else-if="item">
       <div class="page-header">
-        <div><h1>{{ item.name }}</h1><p>{{ item.category || 'Sin categoria' }} &middot; {{ item.unit }}</p></div>
+        <div><h1>{{ item.name }}</h1><p>{{ item.category || 'Sin categoría' }} &middot; {{ item.unit }}</p></div>
         <div class="row">
           <RouterLink :to="`/items/${id}/edit`" class="btn btn-primary">Editar</RouterLink>
           <RouterLink to="/items" class="btn">Volver</RouterLink>
@@ -42,7 +42,7 @@ export default {
 
       <div class="stat-grid mb-4">
         <div class="stat"><span class="stat-label">Stock total</span><span class="stat-value">{{ item.totalStock }}</span></div>
-        <div class="stat"><span class="stat-label">Stock minimo</span><span class="stat-value">{{ item.minimumStock }}</span></div>
+        <div class="stat"><span class="stat-label">Stock mínimo</span><span class="stat-value">{{ item.minimumStock }}</span></div>
         <div class="stat"><span class="stat-label">Estado</span><span class="mt-2"><StatusBadge :status="item.status" /></span></div>
         <div class="stat"><span class="stat-label">Estado fisico</span><span class="mt-2"><StatusBadge :status="item.conditionState" /></span></div>
       </div>
@@ -51,14 +51,14 @@ export default {
         <div class="card">
           <div class="card-header"><h3>Stock por sucursal</h3></div>
           <div class="table-wrap">
-            <table class="data">
+            <table class="data data-cards">
               <thead><tr><th>Sucursal</th><th class="text-right">Cantidad</th></tr></thead>
               <tbody>
                 <tr v-for="(s, i) in item.stockByBranch" :key="i">
-                  <td>{{ s.branch_name || 'Sin asignar' }}</td>
-                  <td class="text-right">{{ s.quantity }}</td>
+                  <td data-label="Sucursal">{{ s.branch_name || 'Sin asignar' }}</td>
+                  <td class="text-right" data-label="Cantidad">{{ s.quantity }}</td>
                 </tr>
-                <tr v-if="!item.stockByBranch.length"><td colspan="2" class="table-empty">Sin stock distribuido</td></tr>
+                <tr v-if="!item.stockByBranch.length" class="empty-row"><td colspan="2" class="table-empty empty-cell">Sin stock distribuido</td></tr>
               </tbody>
             </table>
           </div>
@@ -79,19 +79,19 @@ export default {
       <div class="card mt-4">
         <div class="card-header"><h3>Historial de movimientos</h3></div>
         <div class="table-wrap">
-          <table class="data">
+          <table class="data data-cards">
             <thead><tr><th>Tipo</th><th>Cant.</th><th>Origen</th><th>Destino</th><th>Motivo</th><th>Usuario</th><th>Fecha</th></tr></thead>
             <tbody>
               <tr v-for="m in movements" :key="m.id">
-                <td><StatusBadge :status="m.movement_type" /></td>
-                <td>{{ m.quantity }}</td>
-                <td>{{ m.origin_branch || '-' }}</td>
-                <td>{{ m.destination_branch || '-' }}</td>
-                <td class="muted">{{ m.reason || '-' }}</td>
-                <td>{{ m.user_name || '-' }}</td>
-                <td class="muted">{{ date(m.created_at) }}</td>
+                <td data-label="Tipo"><StatusBadge :status="m.movement_type" /></td>
+                <td data-label="Cant.">{{ m.quantity }}</td>
+                <td data-label="Origen">{{ m.origin_branch || '-' }}</td>
+                <td data-label="Destino">{{ m.destination_branch || '-' }}</td>
+                <td class="muted" data-label="Motivo">{{ m.reason || '-' }}</td>
+                <td data-label="Usuario">{{ m.user_name || '-' }}</td>
+                <td class="muted" data-label="Fecha">{{ date(m.created_at) }}</td>
               </tr>
-              <tr v-if="!movements.length"><td colspan="7" class="table-empty">Sin movimientos</td></tr>
+              <tr v-if="!movements.length" class="empty-row"><td colspan="7" class="table-empty empty-cell">Sin movimientos</td></tr>
             </tbody>
           </table>
         </div>

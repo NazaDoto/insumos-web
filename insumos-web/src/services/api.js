@@ -12,7 +12,7 @@ api.interceptors.request.use((config) => {
   return config
 })
 
-// Manejo centralizado de errores y sesion expirada.
+// Manejo centralizado de errores y sesión expirada.
 api.interceptors.response.use(
   (res) => res,
   (error) => {

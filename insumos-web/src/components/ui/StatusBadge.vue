@@ -15,7 +15,7 @@ const MAP = {
   available: { label: 'Disponible', color: 'green' },
   in_use: { label: 'En uso', color: 'blue' },
   repair: { label: 'En reparacion', color: 'amber' },
-  damaged: { label: 'Danado', color: 'red' },
+  damaged: { label: 'Dañado', color: 'red' },
   retired: { label: 'Dado de baja', color: 'gray' },
   reserved: { label: 'Reservado', color: 'cyan' },
   lost: { label: 'Extraviado', color: 'red' },
