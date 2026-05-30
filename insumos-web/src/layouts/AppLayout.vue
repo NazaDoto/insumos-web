@@ -9,7 +9,7 @@ const NAV = [
   { to: '/users', label: 'Usuarios', ico: '\u{1F465}', roles: ['sysadmin', 'admin'] },
   { to: '/items', label: 'Insumos', ico: '\u{1F4E6}', roles: ['sysadmin', 'admin'] },
   { to: '/catalog', label: 'Mi stock', ico: '\u{1F4E6}', roles: ['provider'] },
-  { to: '/categories', label: 'Categorias', ico: '\u{1F3F7}', roles: ['sysadmin', 'admin'] },
+  { to: '/categories', label: 'Categorias', ico: '\u{1F3F7}', roles: ['sysadmin', 'admin', 'provider'] },
   { to: '/branches', label: 'Oficinas / Sucursales', ico: '\u{1F3E2}', roles: ['sysadmin', 'admin', 'employee'] },
   { section: 'Operaciones' },
   { to: '/stock', label: 'Stock disponible', ico: '\u{1F4CA}', roles: ['sysadmin', 'admin', 'employee'] },

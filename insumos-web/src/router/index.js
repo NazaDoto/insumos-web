@@ -19,7 +19,7 @@ const routes = [
 
       { path: 'catalog', name: 'catalog', component: () => import('@/views/ProviderCatalogView.vue'), meta: { title: 'Mi stock', roles: ['provider'] } },
 
-      { path: 'categories', name: 'categories', component: () => import('@/views/CategoriesView.vue'), meta: { title: 'Categorias', roles: ['sysadmin', 'admin'] } },
+      { path: 'categories', name: 'categories', component: () => import('@/views/CategoriesView.vue'), meta: { title: 'Categorias', roles: ['sysadmin', 'admin', 'provider'] } },
       { path: 'branches', name: 'branches', component: () => import('@/views/BranchesView.vue'), meta: { title: 'Oficinas / Sucursales', roles: ['sysadmin', 'admin', 'employee'] } },
 
       { path: 'stock', name: 'stock', component: () => import('@/views/StockView.vue'), meta: { title: 'Stock', roles: ['sysadmin', 'admin', 'employee'] } },

@@ -162,7 +162,14 @@ table.data tbody tr:last-child td { border-bottom: none; }
 }
 .sidebar .brand { padding: 20px 22px; font-size: 17px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #1e293b; }
 .sidebar .brand .logo { width: 30px; height: 30px; border-radius: 8px; background: var(--c-primary); display: grid; place-items: center; font-size: 16px; }
-.sidebar nav { padding: 12px; overflow-y: auto; flex: 1; }
+.sidebar nav { padding: 12px; overflow-y: auto; flex: 1; scrollbar-width: thin; scrollbar-color: #334155 transparent; }
+.sidebar nav::-webkit-scrollbar { width: 8px; }
+.sidebar nav::-webkit-scrollbar-track { background: transparent; }
+.sidebar nav::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #334155, #1e293b);
+  border-radius: 999px; border: 2px solid #0f172a; background-clip: padding-box;
+}
+.sidebar nav::-webkit-scrollbar-thumb:hover { background: var(--c-primary); border: 2px solid #0f172a; background-clip: padding-box; }
 .sidebar .nav-section { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: #64748b; padding: 14px 12px 6px; font-weight: 600; }
 .sidebar a.nav-link {
   display: flex; align-items: center; gap: 11px; padding: 9px 12px; border-radius: var(--radius-sm);

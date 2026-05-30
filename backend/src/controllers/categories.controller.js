@@ -5,14 +5,14 @@ import { ROLES } from '../middlewares/authorize.js';
 import { writeLog, reqMeta } from '../utils/audit.js';
 
 function ownerAdminId(req) {
-  // sysadmin crea categorias globales (NULL); admin crea propias.
-  return req.user.role === ROLES.ADMIN ? req.user.id : null;
+  // sysadmin crea categorias globales (NULL); admin y proveedor crean propias.
+  return req.user.role === ROLES.SYSADMIN ? null : req.user.id;
 }
 
 export const list = asyncHandler(async (req, res) => {
   const params = {};
   let where = '1=1';
-  if (req.user.role === ROLES.ADMIN) {
+  if (req.user.role !== ROLES.SYSADMIN) {
     where = '(administrator_id = :uid OR administrator_id IS NULL)';
     params.uid = req.user.id;
   }
@@ -37,7 +37,8 @@ async function fetchScoped(req, id) {
   const [rows] = await pool.execute('SELECT * FROM item_categories WHERE id=:id', { id });
   const cat = rows[0];
   if (!cat) throw ApiError.notFound('Categoria no encontrada');
-  if (req.user.role === ROLES.ADMIN && cat.administrator_id && cat.administrator_id !== req.user.id) {
+  // Admin y proveedor solo pueden modificar sus propias categorias (no las globales ni ajenas).
+  if (req.user.role !== ROLES.SYSADMIN && cat.administrator_id !== req.user.id) {
     throw ApiError.forbidden('No puede modificar esta categoria');
   }
   return cat;
