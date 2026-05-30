@@ -27,7 +27,7 @@ export default {
         { key: 'actions', label: '', align: 'right' },
       ],
       showModal: false, saving: false, form: {}, errors: {},
-      admins: [],
+      admins: [], togglingId: null,
     }
   },
   computed: {
@@ -95,11 +95,12 @@ export default {
     },
     async toggleStatus(u) {
       const status = u.status === 'active' ? 'inactive' : 'active'
+      this.togglingId = u.id
       try {
         await api.patch(`/users/${u.id}/status`, { status })
         useUiStore().success('Estado actualizado')
-        this.load()
-      } catch (e) { useUiStore().error(e.userMessage) }
+        await this.load()
+      } catch (e) { useUiStore().error(e.userMessage) } finally { this.togglingId = null }
     },
   },
 }
@@ -133,7 +134,10 @@ export default {
       <template #cell-actions="{ row }">
         <div class="actions" style="justify-content:flex-end">
           <button class="btn btn-sm" @click="openEdit(row)">Editar</button>
-          <button class="btn btn-sm" @click="toggleStatus(row)">{{ row.status === 'active' ? 'Desactivar' : 'Activar' }}</button>
+          <button class="btn btn-sm" :disabled="togglingId === row.id" @click="toggleStatus(row)">
+            <span v-if="togglingId === row.id" class="spinner dark"></span>
+            {{ row.status === 'active' ? 'Desactivar' : 'Activar' }}
+          </button>
         </div>
       </template>
       <template #footer><Pagination :meta="meta" @change="changePage" /></template>

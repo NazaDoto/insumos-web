@@ -82,7 +82,9 @@ export default {
         <option value="">Todas las sucursales</option>
         <option v-for="b in branches" :key="b.id" :value="b.id">{{ b.name }}</option>
       </select>
-      <button class="btn btn-primary" @click="run">Generar</button>
+      <button class="btn btn-primary" :disabled="loading" @click="run">
+        <span v-if="loading" class="spinner"></span> Generar
+      </button>
     </div>
 
     <div class="card">

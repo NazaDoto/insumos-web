@@ -20,9 +20,10 @@ export default {
         { key: 'status', label: 'Estado' },
         { key: 'actions', label: '', align: 'right' },
       ],
-      showModal: false, saving: false, form: {}, errors: {},
+      showModal: false, saving: false, form: {}, errors: {}, togglingId: null,
       // Asignacion de empleados
       manageBranch: null, employees: [], assignList: [], assignUserId: '',
+      manageLoading: false, assigning: false, unassigningId: null,
     }
   },
   computed: {
@@ -46,11 +47,12 @@ export default {
       } catch (e) { this.errors = e.details || {}; useUiStore().error(e.userMessage) } finally { this.saving = false }
     },
     async toggle(b) {
-      try { await api.delete(`/branches/${b.id}`); useUiStore().success('Sucursal desactivada'); this.load() }
-      catch (e) { useUiStore().error(e.userMessage) }
+      this.togglingId = b.id
+      try { await api.delete(`/branches/${b.id}`); useUiStore().success('Sucursal desactivada'); await this.load() }
+      catch (e) { useUiStore().error(e.userMessage) } finally { this.togglingId = null }
     },
     async openManage(b) {
-      this.manageBranch = b; this.assignUserId = ''
+      this.manageBranch = b; this.assignUserId = ''; this.manageLoading = true
       try {
         const [{ data: det }, { data: emps }] = await Promise.all([
           api.get(`/branches/${b.id}`),
@@ -58,20 +60,22 @@ export default {
         ])
         this.assignList = det.data.employees || []
         this.employees = emps.data
-      } catch (e) { useUiStore().error(e.userMessage) }
+      } catch (e) { useUiStore().error(e.userMessage) } finally { this.manageLoading = false }
     },
     async assign() {
       if (!this.assignUserId) return
+      this.assigning = true
       try {
         await api.post(`/branches/${this.manageBranch.id}/employees`, { userId: Number(this.assignUserId) })
-        useUiStore().success('Empleado asignado'); this.openManage(this.manageBranch)
-      } catch (e) { useUiStore().error(e.userMessage) }
+        useUiStore().success('Empleado asignado'); await this.openManage(this.manageBranch)
+      } catch (e) { useUiStore().error(e.userMessage) } finally { this.assigning = false }
     },
     async unassign(uid) {
+      this.unassigningId = uid
       try {
         await api.delete(`/branches/${this.manageBranch.id}/employees/${uid}`)
-        useUiStore().success('Empleado desasignado'); this.openManage(this.manageBranch)
-      } catch (e) { useUiStore().error(e.userMessage) }
+        useUiStore().success('Empleado desasignado'); await this.openManage(this.manageBranch)
+      } catch (e) { useUiStore().error(e.userMessage) } finally { this.unassigningId = null }
     },
   },
 }
@@ -92,7 +96,9 @@ export default {
           <RouterLink :to="`/stock?branchId=${row.id}`" class="btn btn-sm">Stock</RouterLink>
           <button class="btn btn-sm" @click="openManage(row)">Empleados</button>
           <button class="btn btn-sm" @click="openEdit(row)">Editar</button>
-          <button class="btn btn-sm" v-if="row.status === 'active'" @click="toggle(row)">Baja</button>
+          <button class="btn btn-sm" v-if="row.status === 'active'" :disabled="togglingId === row.id" @click="toggle(row)">
+            <span v-if="togglingId === row.id" class="spinner dark"></span> Baja
+          </button>
         </div>
       </template>
     </DataTable>
@@ -117,15 +123,22 @@ export default {
           <option value="">Seleccione empleado...</option>
           <option v-for="e in employees" :key="e.id" :value="e.id">{{ e.firstName }} {{ e.lastName }}</option>
         </select>
-        <button class="btn btn-primary" @click="assign">Asignar</button>
+        <button class="btn btn-primary" :disabled="assigning || !assignUserId" @click="assign">
+          <span v-if="assigning" class="spinner"></span> Asignar
+        </button>
       </div>
-      <table class="data">
+      <div v-if="manageLoading" class="loading-center"><span class="spinner dark"></span></div>
+      <table v-else class="data">
         <thead><tr><th>Empleado</th><th>Email</th><th></th></tr></thead>
         <tbody>
           <tr v-for="e in assignList" :key="e.id">
             <td>{{ e.first_name }} {{ e.last_name }}</td>
             <td class="muted">{{ e.email }}</td>
-            <td class="text-right"><button class="btn btn-sm btn-danger" @click="unassign(e.id)">Quitar</button></td>
+            <td class="text-right">
+              <button class="btn btn-sm btn-danger" :disabled="unassigningId === e.id" @click="unassign(e.id)">
+                <span v-if="unassigningId === e.id" class="spinner"></span> Quitar
+              </button>
+            </td>
           </tr>
           <tr v-if="!assignList.length"><td colspan="3" class="table-empty">Sin empleados asignados</td></tr>
         </tbody>

@@ -9,7 +9,7 @@ export default {
       providers: [], providerItems: [], branches: [],
       providerId: '', observations: '',
       lines: [],
-      saving: false,
+      saving: false, loadingItems: false,
     }
   },
   mounted() {
@@ -25,8 +25,9 @@ export default {
     async onProviderChange() {
       this.lines = []; this.providerItems = []
       if (!this.providerId) return
+      this.loadingItems = true
       try { const { data } = await api.get(`/providers/${this.providerId}/items`); this.providerItems = data.data }
-      catch (e) { useUiStore().error(e.userMessage) }
+      catch (e) { useUiStore().error(e.userMessage) } finally { this.loadingItems = false }
     },
     addLine() { this.lines.push({ itemId: '', requestedQuantity: 1, destinationBranchId: '', observations: '' }) },
     removeLine(i) { this.lines.splice(i, 1) },
@@ -73,8 +74,8 @@ export default {
       </div>
 
       <div class="card-header" style="padding-left:0;padding-right:0">
-        <h3>Insumos solicitados</h3>
-        <button class="btn btn-sm" :disabled="!providerId" @click="addLine">+ Agregar insumo</button>
+        <h3>Insumos solicitados <span v-if="loadingItems" class="muted" style="font-weight:400;font-size:13px">(cargando catalogo...)</span></h3>
+        <button class="btn btn-sm" :disabled="!providerId || loadingItems" @click="addLine">+ Agregar insumo</button>
       </div>
 
       <table class="data">

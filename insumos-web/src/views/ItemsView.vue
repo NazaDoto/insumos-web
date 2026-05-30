@@ -22,7 +22,7 @@ export default {
         { key: 'status', label: 'Estado' },
         { key: 'actions', label: '', align: 'right' },
       ],
-      confirm: null,
+      confirm: null, deleting: false,
     }
   },
   mounted() { this.load(); this.loadCategories() },
@@ -43,12 +43,13 @@ export default {
     isLow(r) { return Number(r.totalStock) <= Number(r.minimumStock) },
     askDelete(r) { this.confirm = r },
     async doDelete() {
+      this.deleting = true
       try {
         await api.delete(`/items/${this.confirm.id}`)
         useUiStore().success('Insumo desactivado')
         this.confirm = null
-        this.load()
-      } catch (e) { useUiStore().error(e.userMessage) }
+        await this.load()
+      } catch (e) { useUiStore().error(e.userMessage) } finally { this.deleting = false }
     },
   },
 }
@@ -92,6 +93,6 @@ export default {
 
     <ConfirmDialog v-if="confirm" danger title="Dar de baja insumo"
       :message="`Desea desactivar el insumo \u201C${confirm.name}\u201D?`" confirm-text="Desactivar"
-      @confirm="doDelete" @cancel="confirm = null" />
+      :loading="deleting" @confirm="doDelete" @cancel="confirm = null" />
   </div>
 </template>

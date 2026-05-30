@@ -28,7 +28,7 @@ export default {
         { key: 'is_active', label: 'Activo' },
         { key: 'actions', label: '', align: 'right' },
       ],
-      showModal: false, saving: false, form: {}, errors: {}, optionsText: '',
+      showModal: false, saving: false, form: {}, errors: {}, optionsText: '', removingId: null,
     }
   },
   mounted() { this.load() },
@@ -62,8 +62,9 @@ export default {
       } catch (e) { this.errors = e.details || {}; useUiStore().error(e.userMessage) } finally { this.saving = false }
     },
     async remove(f) {
-      try { await api.delete(`/custom-fields/${f.id}`); useUiStore().success('Atributo desactivado'); this.load() }
-      catch (e) { useUiStore().error(e.userMessage) }
+      this.removingId = f.id
+      try { await api.delete(`/custom-fields/${f.id}`); useUiStore().success('Atributo desactivado'); await this.load() }
+      catch (e) { useUiStore().error(e.userMessage) } finally { this.removingId = null }
     },
   },
 }
@@ -91,7 +92,9 @@ export default {
       <template #cell-actions="{ row }">
         <div class="actions" style="justify-content:flex-end">
           <button class="btn btn-sm" @click="openEdit(row)">Editar</button>
-          <button class="btn btn-sm" v-if="row.is_active" @click="remove(row)">Desactivar</button>
+          <button class="btn btn-sm" v-if="row.is_active" :disabled="removingId === row.id" @click="remove(row)">
+            <span v-if="removingId === row.id" class="spinner dark"></span> Desactivar
+          </button>
         </div>
       </template>
     </DataTable>

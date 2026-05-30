@@ -8,7 +8,7 @@ export default {
     return {
       branches: [], stockItems: [], customFields: [], customValues: {},
       form: { branchId: '', itemId: '', quantity: null, usedWhere: '', usedFor: '', recipient: '', observations: '' },
-      saving: false,
+      saving: false, loadingStock: false,
     }
   },
   computed: {
@@ -22,8 +22,9 @@ export default {
     async onBranchChange() {
       this.form.itemId = ''; this.stockItems = []
       if (!this.form.branchId) return
+      this.loadingStock = true
       try { const { data } = await api.get('/stock', { params: { branchId: this.form.branchId } }); this.stockItems = data.data }
-      catch (e) { useUiStore().error(e.userMessage) }
+      catch (e) { useUiStore().error(e.userMessage) } finally { this.loadingStock = false }
     },
     async submit() {
       if (!this.form.branchId || !this.form.itemId || !this.form.quantity) return useUiStore().warning('Complete los campos obligatorios')
@@ -60,8 +61,8 @@ export default {
           </select>
         </div>
         <div class="field">
-          <label>Insumo <span class="req">*</span></label>
-          <select v-model="form.itemId" class="select" :disabled="!form.branchId">
+          <label>Insumo <span class="req">*</span> <span v-if="loadingStock" class="muted" style="font-size:12px">(cargando...)</span></label>
+          <select v-model="form.itemId" class="select" :disabled="!form.branchId || loadingStock">
             <option value="">Seleccione...</option>
             <option v-for="s in stockItems" :key="s.item_id" :value="s.item_id">{{ s.item_name }} (disp: {{ s.quantity }})</option>
           </select>

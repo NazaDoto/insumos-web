@@ -17,7 +17,7 @@ export default {
         { key: 'status', label: 'Estado' },
         { key: 'actions', label: '', align: 'right' },
       ],
-      showModal: false, saving: false, form: {}, errors: {},
+      showModal: false, saving: false, form: {}, errors: {}, togglingId: null,
     }
   },
   mounted() { this.load() },
@@ -37,8 +37,9 @@ export default {
       } catch (e) { this.errors = e.details || {}; useUiStore().error(e.userMessage) } finally { this.saving = false }
     },
     async toggle(c) {
-      try { await api.delete(`/categories/${c.id}`); useUiStore().success('Categoria desactivada'); this.load() }
-      catch (e) { useUiStore().error(e.userMessage) }
+      this.togglingId = c.id
+      try { await api.delete(`/categories/${c.id}`); useUiStore().success('Categoria desactivada'); await this.load() }
+      catch (e) { useUiStore().error(e.userMessage) } finally { this.togglingId = null }
     },
   },
 }
@@ -56,7 +57,9 @@ export default {
       <template #cell-actions="{ row }">
         <div class="actions" style="justify-content:flex-end">
           <button class="btn btn-sm" @click="openEdit(row)">Editar</button>
-          <button class="btn btn-sm" @click="toggle(row)" v-if="row.status === 'active'">Desactivar</button>
+          <button class="btn btn-sm" v-if="row.status === 'active'" :disabled="togglingId === row.id" @click="toggle(row)">
+            <span v-if="togglingId === row.id" class="spinner dark"></span> Desactivar
+          </button>
         </div>
       </template>
     </DataTable>

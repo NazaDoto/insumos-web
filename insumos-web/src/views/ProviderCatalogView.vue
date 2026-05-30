@@ -20,7 +20,7 @@ export default {
         { key: 'actions', label: '', align: 'right' },
       ],
       categories: [],
-      showModal: false, saving: false, form: {}, errors: {},
+      showModal: false, saving: false, form: {}, errors: {}, removingId: null,
     }
   },
   mounted() { this.load(); this.loadCategories() },
@@ -44,8 +44,9 @@ export default {
       } catch (e) { this.errors = e.details || {}; useUiStore().error(e.userMessage) } finally { this.saving = false }
     },
     async remove(i) {
-      try { await api.delete(`/provider/items/${i.id}`); useUiStore().success('Insumo desactivado'); this.load() }
-      catch (e) { useUiStore().error(e.userMessage) }
+      this.removingId = i.id
+      try { await api.delete(`/provider/items/${i.id}`); useUiStore().success('Insumo desactivado'); await this.load() }
+      catch (e) { useUiStore().error(e.userMessage) } finally { this.removingId = null }
     },
   },
 }
@@ -64,7 +65,9 @@ export default {
       <template #cell-actions="{ row }">
         <div class="actions" style="justify-content:flex-end">
           <button class="btn btn-sm" @click="openEdit(row)">Editar</button>
-          <button class="btn btn-sm" v-if="row.status === 'active'" @click="remove(row)">Baja</button>
+          <button class="btn btn-sm" v-if="row.status === 'active'" :disabled="removingId === row.id" @click="remove(row)">
+            <span v-if="removingId === row.id" class="spinner dark"></span> Baja
+          </button>
         </div>
       </template>
     </DataTable>
