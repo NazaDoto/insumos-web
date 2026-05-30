@@ -14,6 +14,7 @@ const PROVIDER_TRANSITIONS = {
   sent: ['delivered', 'partial'],
 }
 const LABELS = { accepted: 'Aceptar', rejected: 'Rechazar', preparing: 'En preparacion', sent: 'Marcar enviado', delivered: 'Marcar entregado', partial: 'Entrega parcial' }
+const STATUS_ES = { pending: 'Pendiente', accepted: 'Aceptado', rejected: 'Rechazado', preparing: 'En preparacion', sent: 'Enviado', delivered: 'Entregado', cancelled: 'Cancelado', partial: 'Entrega parcial' }
 
 export default {
   name: 'OrderDetailView',
@@ -43,6 +44,7 @@ export default {
       catch (e) { useUiStore().error(e.userMessage) } finally { this.loading = false }
     },
     date(d) { return d ? new Date(d).toLocaleString('es-AR') : '' },
+    statusEs(s) { return STATUS_ES[s] || s },
     openStatus(status) {
       this.newStatus = status; this.statusObs = ''
       this.editLines = this.order.details.map(d => ({
@@ -123,7 +125,7 @@ export default {
         </div>
       </div>
 
-      <BaseModal v-if="statusModal" large :title="`Actualizar a: ${newStatus}`" @close="statusModal = false">
+      <BaseModal v-if="statusModal" large :title="`Actualizar pedido a: ${statusEs(newStatus)}`" @close="statusModal = false">
         <div v-if="deliversStock" class="mb-4">
           <p class="muted mb-4">Confirme las cantidades entregadas. El stock del administrador se actualizara automaticamente.</p>
           <table class="data">

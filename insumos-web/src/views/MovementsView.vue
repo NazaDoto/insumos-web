@@ -22,7 +22,11 @@ export default {
         { key: 'destination_branch', label: 'Destino' },
         { key: 'user_name', label: 'Usuario' },
       ],
-      types: ['income', 'outcome', 'transfer', 'usage', 'adjustment', 'order_received', 'order_sent'],
+      types: [
+        { v: 'income', l: 'Ingreso' }, { v: 'outcome', l: 'Egreso' }, { v: 'transfer', l: 'Transferencia' },
+        { v: 'usage', l: 'Uso' }, { v: 'adjustment', l: 'Ajuste' },
+        { v: 'order_received', l: 'Pedido recibido' }, { v: 'order_sent', l: 'Pedido enviado' },
+      ],
       branches: [], items: [],
       showModal: false, saving: false,
       form: { type: 'income', itemId: '', branchId: '', originBranchId: '', destinationBranchId: '', quantity: null, newQuantity: null, reason: '' },
@@ -70,7 +74,7 @@ export default {
     <div class="toolbar">
       <select v-model="filters.type" class="select" style="max-width:180px" @change="onFilter">
         <option value="">Todos los tipos</option>
-        <option v-for="t in types" :key="t" :value="t">{{ t }}</option>
+        <option v-for="t in types" :key="t.v" :value="t.v">{{ t.l }}</option>
       </select>
       <input v-model="filters.from" class="input" type="date" @change="onFilter" />
       <input v-model="filters.to" class="input" type="date" @change="onFilter" />

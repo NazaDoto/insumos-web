@@ -13,7 +13,11 @@ export default {
   data() {
     return {
       rows: [], meta: {}, loading: true, page: 1, status: '',
-      statuses: ['pending', 'accepted', 'rejected', 'preparing', 'sent', 'delivered', 'cancelled', 'partial'],
+      statuses: [
+        { v: 'pending', l: 'Pendiente' }, { v: 'accepted', l: 'Aceptado' }, { v: 'rejected', l: 'Rechazado' },
+        { v: 'preparing', l: 'En preparacion' }, { v: 'sent', l: 'Enviado' }, { v: 'delivered', l: 'Entregado' },
+        { v: 'cancelled', l: 'Cancelado' }, { v: 'partial', l: 'Entrega parcial' },
+      ],
       columns: [
         { key: 'id', label: '#' },
         { key: 'counterpart', label: 'Contraparte' },
@@ -53,7 +57,7 @@ export default {
     <div class="toolbar">
       <select v-model="status" class="select" style="max-width:200px" @change="onFilter">
         <option value="">Todos los estados</option>
-        <option v-for="s in statuses" :key="s" :value="s">{{ s }}</option>
+        <option v-for="s in statuses" :key="s.v" :value="s.v">{{ s.l }}</option>
       </select>
     </div>
 
