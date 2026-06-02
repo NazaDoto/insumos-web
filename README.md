@@ -150,5 +150,5 @@ sudo certbot renew --dry-run
 
 - Pantalla **Insumos** → **Importar Excel** (plantilla descargable desde el modal).
 - Columna **id_externo**: identificador del Excel/sistema origen; al reimportar se **actualiza** el mismo insumo.
-- Con **stock** + **sucursal** se registra ingreso (o ajuste si ya existía).
+- Con **stock** se registra ingreso (o ajuste si ya existía). **Sucursal** es opcional: vacía + una sola oficina → esa oficina; vacía + varias → stock general sin sucursal.
 - Endpoint: `POST /api/items/import` (multipart, campo `file`), plantilla: `GET /api/items/import/template`.

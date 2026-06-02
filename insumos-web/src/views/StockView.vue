@@ -86,6 +86,9 @@ export default {
     </div>
 
     <DataTable :columns="actionColumns" :rows="rows" :loading="loading">
+      <template #cell-branch_name="{ row }">
+        <span :class="{ muted: !row.branch_name }">{{ row.branch_name || 'Stock general' }}</span>
+      </template>
       <template #cell-quantity="{ row }">
         <span :style="isLow(row) ? 'color:var(--c-danger);font-weight:600' : ''">{{ row.quantity }} {{ row.unit }}</span>
       </template>

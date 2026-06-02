@@ -135,9 +135,6 @@ function validateRow(row, owner) {
   if (row.stockQty !== undefined) {
     const stock = parseNumber(row.stockQty);
     if (Number.isNaN(stock) || stock < 0) errors.push({ field: 'stock', message: 'Cantidad de stock inválida' });
-    else     if (stock > 0 && owner?.ownerType === 'administrator' && !String(row.branchName || '').trim()) {
-      errors.push({ field: 'sucursal', message: 'Indique sucursal cuando carga stock' });
-    }
   }
 
   if (row.status !== undefined) {
@@ -170,12 +167,34 @@ async function loadCategories(conn, owner) {
 async function loadBranches(conn, owner) {
   if (owner.ownerType !== 'administrator') return new Map();
   const [rows] = await conn.execute(
-    `SELECT id, name FROM branches WHERE administrator_id = :aid AND status='active'`,
+    `SELECT id, name FROM branches WHERE administrator_id = :aid AND status='active' ORDER BY name`,
     { aid: owner.ownerId }
   );
   const map = new Map();
-  for (const b of rows) map.set(b.name.trim().toLowerCase(), b.id);
+  for (const b of rows) map.set(b.name.trim().toLowerCase(), { id: b.id, name: b.name });
   return map;
+}
+
+/**
+ * Resuelve dónde cargar el stock cuando la fila del Excel no trae sucursal:
+ * - Si indicó nombre: debe existir entre las sucursales activas.
+ * - Si tiene una sola sucursal: se usa esa (el stock aparece en Stock disponible).
+ * - Si tiene varias o ninguna: stock general (branch_id NULL, "Sin asignar" en detalle).
+ */
+function resolveImportBranch(branchMap, branchName) {
+  const key = String(branchName || '').trim().toLowerCase();
+  if (key) {
+    const hit = branchMap.get(key);
+    if (!hit) {
+      return { error: `Sucursal "${String(branchName).trim()}" no encontrada` };
+    }
+    return { branchId: hit.id, locationLabel: hit.name };
+  }
+  if (branchMap.size === 1) {
+    const [, only] = [...branchMap.entries()][0];
+    return { branchId: only.id, locationLabel: only.name, autoAssigned: true };
+  }
+  return { branchId: null, locationLabel: 'Sin sucursal (stock general)' };
 }
 
 async function findItemByExternalRef(conn, owner, externalRefId) {
@@ -400,26 +419,28 @@ export async function importItemsFromExcel(req, buffer) {
       if (row.stockQty !== undefined) {
         const stockQty = parseNumber(row.stockQty);
         if (owner.ownerType === 'administrator') {
-          const branchKey = String(row.branchName || '').trim().toLowerCase();
-          const branchId = branchMap.get(branchKey);
-          if (!branchId) {
-            const msg = `Sucursal "${row.branchName}" no encontrada`;
-            errors.push({ row: rowNum, externalRefId: externalRefId || null, field: 'sucursal', message: msg });
+          const branchRes = resolveImportBranch(branchMap, row.branchName);
+          if (branchRes.error) {
+            errors.push({ row: rowNum, externalRefId: externalRefId || null, field: 'sucursal', message: branchRes.error });
             events.push({
               type: 'error',
               row: rowNum,
               externalRefId: externalRefId || null,
               name,
-              messages: [msg],
+              messages: [branchRes.error],
             });
           } else {
             stockDetail = await applyStockFromImport(conn, {
               itemId,
-              branchId,
+              branchId: branchRes.branchId,
               targetQty: stockQty,
               userId: req.user.id,
               isNew: action === 'created',
             });
+            if (stockDetail) {
+              stockDetail.locationLabel = branchRes.locationLabel;
+              stockDetail.autoAssigned = !!branchRes.autoAssigned;
+            }
             if (stockDetail?.movement) stockMovements += 1;
           }
         } else if (owner.ownerType === 'provider') {
@@ -491,10 +512,20 @@ export async function buildImportTemplate() {
   });
   sheet.addRow({
     id_externo: 'INS-002',
-    nombre: 'Ejemplo sin stock inicial',
+    nombre: 'Ejemplo con stock sin sucursal',
     categoria: 'Limpieza',
     unidad: 'litro',
     stock_minimo: 5,
+    estado: 'activo',
+    condicion: 'disponible',
+    stock: 25,
+  });
+  sheet.addRow({
+    id_externo: 'INS-003',
+    nombre: 'Ejemplo sin stock inicial',
+    categoria: 'Varios',
+    unidad: 'unidad',
+    stock_minimo: 0,
     estado: 'activo',
     condicion: 'disponible',
   });

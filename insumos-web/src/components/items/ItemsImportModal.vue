@@ -86,6 +86,7 @@ export default {
         if (ev.externalRefId) s += ` (ref: ${ev.externalRefId})`
         if (ev.stock?.movement) {
           s += ` · Stock ${ev.stock.movement === 'income' ? '+' : '-'}${ev.stock.quantity}`
+          if (ev.stock.locationLabel) s += ` (${ev.stock.locationLabel})`
         }
         return s
       }
@@ -175,8 +176,8 @@ export default {
               {{ downloading ? 'Descargando...' : 'plantilla Excel' }}
             </button>.</li>
             <li>Completá las filas. <strong>id_externo</strong> es el código de su sistema: si vuelve a importar, se <strong>actualizan</strong> los insumos con el mismo id.</li>
-            <li><strong>nombre</strong> es obligatorio. Si indica <strong>stock</strong>, debe indicar <strong>sucursal</strong> (nombre exacto de una sucursal activa).</li>
-            <li>Al importar con stock, se registra un <strong>ingreso</strong> (en actualizaciones se ajusta al valor del archivo).</li>
+            <li><strong>nombre</strong> es obligatorio. <strong>sucursal</strong> es opcional: si la deja vacía y tiene una sola oficina, el stock se asigna ahí; si tiene varias, queda como stock general (sin sucursal).</li>
+            <li>Al importar con <strong>stock</strong>, se registra un <strong>ingreso</strong> (en actualizaciones se ajusta al valor del archivo).</li>
           </ol>
           <p class="muted" style="font-size:12px;margin-top:10px">
             Columnas: id_externo, nombre, descripcion, categoria, unidad, stock_minimo, estado, condicion, sucursal, stock

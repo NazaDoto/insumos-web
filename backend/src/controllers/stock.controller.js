@@ -60,8 +60,8 @@ export const list = asyncHandler(async (req, res) => {
      FROM stock s
      JOIN items i ON i.id = s.item_id
      LEFT JOIN branches b ON b.id = s.branch_id
-     WHERE ${where.join(' AND ')} AND s.branch_id IS NOT NULL
-     ORDER BY i.name`,
+     WHERE ${where.join(' AND ')}
+     ORDER BY COALESCE(b.name, ''), i.name`,
     params
   );
   res.json({ success: true, data: rows });
