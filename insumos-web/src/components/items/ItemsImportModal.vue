@@ -182,7 +182,9 @@ export default {
             <li>Al importar con <strong>stock</strong>, se registra un <strong>ingreso</strong> (en actualizaciones se ajusta al valor del archivo).</li>
           </ol>
           <p class="muted" style="font-size:12px;margin-top:10px">
-            Columnas: id_externo, nombre, descripcion, categoria, unidad, stock_minimo, estado, condicion, sucursal, stock
+            Columnas base: id_externo, nombre, descripcion, categoria, unidad, stock_minimo, estado, condicion, sucursal, stock.
+            Los <strong>atributos personalizados</strong> activos del módulo Insumos se agregan como columnas extra en la plantilla (nombre técnico del atributo). También puede usar la etiqueta o el prefijo <code>atributo_</code>.
+            La hoja &quot;Atributos&quot; de la plantilla lista cada columna, tipo y opciones válidas.
           </p>
         </div>
 

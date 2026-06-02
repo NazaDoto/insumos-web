@@ -229,7 +229,7 @@ export const importExcel = asyncHandler(async (req, res) => {
 });
 
 export const downloadImportTemplate = asyncHandler(async (req, res) => {
-  const wb = await buildImportTemplate();
+  const wb = await buildImportTemplate(req);
   res.setHeader(
     'Content-Type',
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'

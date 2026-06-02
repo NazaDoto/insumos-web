@@ -3,6 +3,9 @@ import pool, { withTransaction } from '../config/db.js';
 import ApiError from '../utils/ApiError.js';
 import { ROLES } from '../middlewares/authorize.js';
 import { applyStockDelta, recordMovement, getStockQty } from './stock.service.js';
+import { saveCustomValues } from '../utils/customValues.js';
+
+const IMPORTABLE_CUSTOM_TYPES = new Set(['text', 'textarea', 'number', 'date', 'boolean', 'select']);
 
 const HEADER_MAP = {
   id_externo: 'externalRefId',
@@ -79,20 +82,172 @@ function resolveOwner(req) {
   throw ApiError.forbidden('Sin permisos para importar insumos');
 }
 
-export async function parseImportWorkbook(buffer) {
+function cellToText(v) {
+  if (v === null || v === undefined) return null;
+  if (v instanceof Date) return v.toISOString().slice(0, 10);
+  if (typeof v === 'object' && v.text !== undefined) return String(v.text);
+  if (typeof v === 'object' && v.result !== undefined) return cellToText(v.result);
+  return v;
+}
+
+async function loadItemCustomFields(conn, owner) {
+  let where = "module = 'items' AND is_active = 1";
+  const params = {};
+  if (owner.ownerType === 'administrator') {
+    where += ' AND (administrator_id = :uid OR administrator_id IS NULL)';
+    params.uid = owner.ownerId;
+  } else if (owner.ownerType === 'provider') {
+    where += ' AND administrator_id IS NULL';
+  } else {
+    return [];
+  }
+
+  const [rows] = await conn.execute(
+    `SELECT id, field_name, field_label, field_type, is_required
+     FROM custom_fields WHERE ${where} ORDER BY sort_order, id`,
+    params
+  );
+
+  const importable = rows.filter((r) => IMPORTABLE_CUSTOM_TYPES.has(r.field_type));
+  if (!importable.length) return [];
+
+  const ids = importable.map((r) => r.id);
+  const [opts] = await conn.query(
+    'SELECT field_id, value, label FROM custom_field_options WHERE field_id IN (?) ORDER BY sort_order, id',
+    [ids]
+  );
+  const optMap = {};
+  for (const o of opts) {
+    (optMap[o.field_id] ||= []).push(o);
+  }
+  return importable.map((r) => ({ ...r, options: optMap[r.id] || [] }));
+}
+
+function buildCustomFieldHeaderMap(customFields) {
+  const headerToFieldId = {};
+  const fieldsById = {};
+  for (const f of customFields) {
+    fieldsById[f.id] = f;
+    const keys = [
+      f.field_name,
+      f.field_label,
+      `atributo_${f.field_name}`,
+      `attr_${f.field_name}`,
+    ];
+    for (const k of keys) {
+      headerToFieldId[normHeader(k)] = f.id;
+    }
+  }
+  return { headerToFieldId, fieldsById };
+}
+
+function resolveSelectOption(field, raw) {
+  const key = String(raw).trim().toLowerCase();
+  for (const o of field.options || []) {
+    if (String(o.value).trim().toLowerCase() === key) return o.value;
+    if (String(o.label).trim().toLowerCase() === key) return o.value;
+  }
+  return null;
+}
+
+function normalizeBooleanValue(raw) {
+  const k = String(raw).trim().toLowerCase();
+  if (['1', 'si', 'sí', 'yes', 'true', 'verdadero'].includes(k)) return '1';
+  if (['0', 'no', 'false', 'falso'].includes(k)) return '0';
+  return null;
+}
+
+function normalizeCustomValue(field, raw) {
+  if (raw === null || raw === undefined) return null;
+  const str = String(cellToText(raw) ?? raw).trim();
+  if (!str) return null;
+
+  switch (field.field_type) {
+    case 'number': {
+      const n = parseNumber(str);
+      return Number.isNaN(n) ? null : String(n);
+    }
+    case 'boolean': {
+      return normalizeBooleanValue(str);
+    }
+    case 'date': {
+      if (/^\d{4}-\d{2}-\d{2}/.test(str)) return str.slice(0, 10);
+      const d = new Date(str);
+      return Number.isNaN(d.getTime()) ? null : d.toISOString().slice(0, 10);
+    }
+    case 'select':
+      return resolveSelectOption(field, str);
+    default:
+      return str;
+  }
+}
+
+function validateCustomValues(row, fieldsById) {
+  const errors = [];
+  const values = row.customValues || {};
+
+  for (const field of Object.values(fieldsById)) {
+    const raw = values[field.id];
+    const hasValue = raw !== undefined && raw !== null && String(raw).trim() !== '';
+
+    if (field.is_required && !hasValue) {
+      errors.push({ field: field.field_label, message: 'Atributo obligatorio' });
+      continue;
+    }
+    if (!hasValue) {
+      delete values[field.id];
+      continue;
+    }
+
+    const normalized = normalizeCustomValue(field, raw);
+    if (normalized === null) {
+      let hint = 'Valor inválido';
+      if (field.field_type === 'select') {
+        const opts = (field.options || []).map((o) => o.label || o.value).join(', ');
+        hint = `Valor no válido. Opciones: ${opts}`;
+      } else if (field.field_type === 'boolean') {
+        hint = 'Use Si o No (o 1 / 0)';
+      } else if (field.field_type === 'number') {
+        hint = 'Debe ser un número';
+      } else if (field.field_type === 'date') {
+        hint = 'Fecha inválida (AAAA-MM-DD)';
+      }
+      errors.push({ field: field.field_label, message: hint });
+      continue;
+    }
+    values[field.id] = normalized;
+  }
+
+  row.customValues = values;
+  return errors;
+}
+
+export async function parseImportWorkbook(buffer, customFields = []) {
   const wb = new ExcelJS.Workbook();
   await wb.xlsx.load(buffer);
   const sheet = wb.worksheets[0];
   if (!sheet) throw ApiError.badRequest('El archivo Excel no contiene hojas');
 
+  const { headerToFieldId } = buildCustomFieldHeaderMap(customFields);
   const headerRow = sheet.getRow(1);
   const colMap = {};
+  let hasName = false;
+
   headerRow.eachCell((cell, col) => {
-    const key = HEADER_MAP[normHeader(cell.value)];
-    if (key) colMap[col] = key;
+    const h = normHeader(cell.value);
+    const stdKey = HEADER_MAP[h];
+    if (stdKey) {
+      colMap[col] = { kind: 'std', key: stdKey };
+      if (stdKey === 'name') hasName = true;
+      return;
+    }
+    const fieldId = headerToFieldId[h];
+    if (fieldId) {
+      colMap[col] = { kind: 'custom', fieldId };
+    }
   });
 
-  if (!Object.values(colMap).includes('name')) {
+  if (!hasName) {
     throw ApiError.badRequest(
       'Falta la columna obligatoria "nombre". Revise la plantilla de importación.'
     );
@@ -101,16 +256,18 @@ export async function parseImportWorkbook(buffer) {
   const rows = [];
   sheet.eachRow((row, rowNumber) => {
     if (rowNumber === 1) return;
-    const data = { _row: rowNumber };
+    const data = { _row: rowNumber, customValues: {} };
     let hasData = false;
     row.eachCell((cell, col) => {
-      const field = colMap[col];
-      if (!field) return;
-      const v = cell.value;
-      const text = v && typeof v === 'object' && v.text !== undefined ? v.text : v;
-      if (text !== null && text !== undefined && String(text).trim() !== '') {
-        hasData = true;
-        data[field] = text;
+      const mapped = colMap[col];
+      if (!mapped) return;
+      const text = cellToText(cell.value);
+      if (text === null || text === undefined || String(text).trim() === '') return;
+      hasData = true;
+      if (mapped.kind === 'std') {
+        data[mapped.key] = text;
+      } else {
+        data.customValues[mapped.fieldId] = text;
       }
     });
     if (hasData) rows.push(data);
@@ -150,6 +307,10 @@ function validateRow(row, owner) {
   }
 
   return { externalRefId, name, errors };
+}
+
+function mergeRowErrors(base, extra) {
+  return [...base, ...extra];
 }
 
 async function loadCategories(conn, owner) {
@@ -329,7 +490,9 @@ async function applyStockFromImportProvider(conn, { itemId, providerId, targetQt
 
 export async function importItemsFromExcel(req, buffer) {
   const owner = resolveOwner(req);
-  const parsedRows = await parseImportWorkbook(buffer);
+  const customFields = await loadItemCustomFields(pool, owner);
+  const parsedRows = await parseImportWorkbook(buffer, customFields);
+  const { fieldsById } = buildCustomFieldHeaderMap(customFields);
   const events = [{ type: 'start', total: parsedRows.length }];
   const errors = [];
   let created = 0;
@@ -342,7 +505,8 @@ export async function importItemsFromExcel(req, buffer) {
 
     for (const row of parsedRows) {
       const rowNum = row._row;
-      const { externalRefId, name, errors: rowErrors } = validateRow(row, owner);
+      const { externalRefId, name, errors: baseErrors } = validateRow(row, owner);
+      const rowErrors = mergeRowErrors(baseErrors, validateCustomValues(row, fieldsById));
 
       if (rowErrors.length) {
         for (const e of rowErrors) {
@@ -415,6 +579,10 @@ export async function importItemsFromExcel(req, buffer) {
         created += 1;
       }
 
+      if (row.customValues && Object.keys(row.customValues).length) {
+        await saveCustomValues('items', itemId, row.customValues, conn);
+      }
+
       let stockDetail = null;
       if (row.stockQty !== undefined) {
         const stockQty = parseNumber(row.stockQty);
@@ -482,10 +650,13 @@ export async function importItemsFromExcel(req, buffer) {
   return { events, errors, summary: events[events.length - 1].summary };
 }
 
-export async function buildImportTemplate() {
+export async function buildImportTemplate(req) {
+  const owner = resolveOwner(req);
+  const customFields = await loadItemCustomFields(pool, owner);
+
   const wb = new ExcelJS.Workbook();
   const sheet = wb.addWorksheet('Insumos');
-  sheet.columns = [
+  const baseColumns = [
     { header: 'id_externo', key: 'id_externo', width: 14 },
     { header: 'nombre', key: 'nombre', width: 28 },
     { header: 'descripcion', key: 'descripcion', width: 32 },
@@ -497,8 +668,15 @@ export async function buildImportTemplate() {
     { header: 'sucursal', key: 'sucursal', width: 20 },
     { header: 'stock', key: 'stock', width: 12 },
   ];
+  const attrColumns = customFields.map((f) => ({
+    header: f.field_name,
+    key: f.field_name,
+    width: Math.max(14, Math.min(24, f.field_label.length + 2)),
+  }));
+  sheet.columns = [...baseColumns, ...attrColumns];
   sheet.getRow(1).font = { bold: true };
-  sheet.addRow({
+
+  const example1 = {
     id_externo: 'INS-001',
     nombre: 'Ejemplo: Resma A4',
     descripcion: 'Opcional',
@@ -509,8 +687,8 @@ export async function buildImportTemplate() {
     condicion: 'disponible',
     sucursal: 'Casa Central',
     stock: 50,
-  });
-  sheet.addRow({
+  };
+  const example2 = {
     id_externo: 'INS-002',
     nombre: 'Ejemplo con stock sin sucursal',
     categoria: 'Limpieza',
@@ -519,8 +697,8 @@ export async function buildImportTemplate() {
     estado: 'activo',
     condicion: 'disponible',
     stock: 25,
-  });
-  sheet.addRow({
+  };
+  const example3 = {
     id_externo: 'INS-003',
     nombre: 'Ejemplo sin stock inicial',
     categoria: 'Varios',
@@ -528,6 +706,50 @@ export async function buildImportTemplate() {
     stock_minimo: 0,
     estado: 'activo',
     condicion: 'disponible',
-  });
+  };
+
+  for (const f of customFields) {
+    if (f.field_type === 'select' && f.options?.length) {
+      example1[f.field_name] = f.options[0].label || f.options[0].value;
+    } else if (f.field_type === 'boolean') {
+      example1[f.field_name] = 'Si';
+    } else if (f.field_type === 'number') {
+      example1[f.field_name] = 1;
+    } else if (f.field_type === 'date') {
+      example1[f.field_name] = '2026-01-15';
+    } else {
+      example1[f.field_name] = `Ej. ${f.field_label}`;
+    }
+  }
+
+  sheet.addRow(example1);
+  sheet.addRow(example2);
+  sheet.addRow(example3);
+
+  if (customFields.length) {
+    const help = wb.addWorksheet('Atributos');
+    help.columns = [
+      { header: 'columna_excel', key: 'col', width: 22 },
+      { header: 'etiqueta', key: 'label', width: 24 },
+      { header: 'tipo', key: 'type', width: 12 },
+      { header: 'obligatorio', key: 'req', width: 12 },
+      { header: 'opciones', key: 'opts', width: 40 },
+    ];
+    help.getRow(1).font = { bold: true };
+    for (const f of customFields) {
+      help.addRow({
+        col: f.field_name,
+        label: f.field_label,
+        type: f.field_type,
+        req: f.is_required ? 'Si' : 'No',
+        opts: f.field_type === 'select'
+          ? (f.options || []).map((o) => o.label || o.value).join(', ')
+          : f.field_type === 'boolean'
+            ? 'Si, No'
+            : '',
+      });
+    }
+  }
+
   return wb;
 }
