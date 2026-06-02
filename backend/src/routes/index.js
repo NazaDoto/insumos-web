@@ -13,6 +13,7 @@ import usageRoutes from './usage.routes.js';
 import customFieldsRoutes from './customFields.routes.js';
 import logsRoutes from './logs.routes.js';
 import reportsRoutes from './reports.routes.js';
+import exportRoutes from './export.routes.js';
 import dashboardRoutes from './dashboard.routes.js';
 
 const router = Router();
@@ -36,5 +37,6 @@ router.use('/usage', usageRoutes);
 router.use('/custom-fields', customFieldsRoutes);
 router.use('/logs', logsRoutes);
 router.use('/reports', reportsRoutes);
+router.use('/export', exportRoutes);
 
 export default router;

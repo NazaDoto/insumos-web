@@ -5,10 +5,11 @@ import DataTable from '@/components/ui/DataTable.vue'
 import Pagination from '@/components/ui/Pagination.vue'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
 import BaseModal from '@/components/ui/BaseModal.vue'
+import ExportExcelButton from '@/components/ui/ExportExcelButton.vue'
 
 export default {
   name: 'MovementsView',
-  components: { DataTable, Pagination, StatusBadge, BaseModal },
+  components: { DataTable, Pagination, StatusBadge, BaseModal, ExportExcelButton },
   data() {
     return {
       rows: [], meta: {}, loading: true, page: 1,
@@ -78,6 +79,8 @@ export default {
       </select>
       <input v-model="filters.from" class="input" type="date" @change="onFilter" />
       <input v-model="filters.to" class="input" type="date" @change="onFilter" />
+      <div class="spacer"></div>
+      <ExportExcelButton path="/export/movements" :params="filters" filename="movimientos" />
     </div>
 
     <DataTable :columns="columns" :rows="rows" :loading="loading">

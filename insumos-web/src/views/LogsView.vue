@@ -4,10 +4,11 @@ import api from '@/services/api'
 import DataTable from '@/components/ui/DataTable.vue'
 import Pagination from '@/components/ui/Pagination.vue'
 import BaseModal from '@/components/ui/BaseModal.vue'
+import ExportExcelButton from '@/components/ui/ExportExcelButton.vue'
 
 export default {
   name: 'LogsView',
-  components: { DataTable, Pagination, BaseModal },
+  components: { DataTable, Pagination, BaseModal, ExportExcelButton },
   data() {
     return {
       rows: [], meta: {}, loading: true, page: 1,
@@ -48,6 +49,8 @@ export default {
       <input v-model="filters.from" class="input" type="date" @change="onFilter" />
       <input v-model="filters.to" class="input" type="date" @change="onFilter" />
       <button class="btn" @click="onFilter">Filtrar</button>
+      <div class="spacer"></div>
+      <ExportExcelButton path="/export/logs" :params="filters" filename="logs" />
     </div>
 
     <DataTable :columns="columns" :rows="rows" :loading="loading">

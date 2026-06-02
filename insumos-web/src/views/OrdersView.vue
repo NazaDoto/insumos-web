@@ -6,10 +6,11 @@ import api from '@/services/api'
 import DataTable from '@/components/ui/DataTable.vue'
 import Pagination from '@/components/ui/Pagination.vue'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
+import ExportExcelButton from '@/components/ui/ExportExcelButton.vue'
 
 export default {
   name: 'OrdersView',
-  components: { DataTable, Pagination, StatusBadge },
+  components: { DataTable, Pagination, StatusBadge, ExportExcelButton },
   data() {
     return {
       rows: [], meta: {}, loading: true, page: 1, status: '',
@@ -59,6 +60,8 @@ export default {
         <option value="">Todos los estados</option>
         <option v-for="s in statuses" :key="s.v" :value="s.v">{{ s.l }}</option>
       </select>
+      <div class="spacer"></div>
+      <ExportExcelButton path="/export/orders" :params="{ status }" filename="pedidos" />
     </div>
 
     <DataTable :columns="columns" :rows="rows" :loading="loading">

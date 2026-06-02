@@ -144,7 +144,28 @@ sudo certbot renew --dry-run
 `/api/auth`, `/api/users`, `/api/items`, `/api/categories`, `/api/branches`,
 `/api/stock` (+ `income`/`outcome`/`transfer`/`adjustment`/`movements`),
 `/api/providers`, `/api/provider/items`, `/api/orders`, `/api/usage`,
-`/api/custom-fields`, `/api/logs`, `/api/reports` (+ `export/excel`), `/api/dashboard`.
+`/api/custom-fields`, `/api/logs`, `/api/reports` (+ `export/excel`), `/api/export` (listados), `/api/dashboard`.
+
+### Exportación a Excel (listados)
+
+Cada pantalla con tabla incluye **Exportar Excel**; respeta los filtros activos (hasta 10.000 filas).
+
+| Módulo | `GET /api/export/...` | Roles |
+|--------|----------------------|-------|
+| Usuarios | `/users` | admin, sysadmin |
+| Insumos | `/items` | admin, sysadmin |
+| Categorías | `/categories` | admin, sysadmin, provider |
+| Sucursales | `/branches` | admin, sysadmin, employee |
+| Stock | `/stock` | admin, sysadmin, employee |
+| Movimientos | `/movements` | admin, sysadmin |
+| Pedidos | `/orders` | admin, sysadmin, provider |
+| Uso de insumos | `/usage` | admin, sysadmin, employee |
+| Logs | `/logs` | admin, sysadmin |
+| Proveedores | `/providers` | admin, sysadmin |
+| Mi stock (proveedor) | `/provider-catalog` | provider |
+| Atributos personalizados | `/custom-fields` | admin, sysadmin |
+
+Reportes dinámicos: `GET /api/reports/export/excel?type=...` (mismos filtros que en pantalla).
 
 ### Importación de insumos (Excel)
 

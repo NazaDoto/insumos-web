@@ -3,10 +3,11 @@ import { useUiStore } from '@/stores/ui'
 import api from '@/services/api'
 import DataTable from '@/components/ui/DataTable.vue'
 import BaseModal from '@/components/ui/BaseModal.vue'
+import ExportExcelButton from '@/components/ui/ExportExcelButton.vue'
 
 export default {
   name: 'ProvidersView',
-  components: { DataTable, BaseModal },
+  components: { DataTable, BaseModal, ExportExcelButton },
   data() {
     return {
       rows: [], loading: true, search: '',
@@ -43,6 +44,8 @@ export default {
     <div class="toolbar">
       <input v-model="search" class="input search-input" placeholder="Buscar proveedor..." @keyup.enter="load" />
       <button class="btn" @click="load">Buscar</button>
+      <div class="spacer"></div>
+      <ExportExcelButton path="/export/providers" :params="{ search }" filename="proveedores" />
     </div>
 
     <DataTable :columns="columns" :rows="rows" :loading="loading">

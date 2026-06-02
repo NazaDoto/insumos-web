@@ -5,10 +5,11 @@ import { useUiStore } from '@/stores/ui'
 import api from '@/services/api'
 import DataTable from '@/components/ui/DataTable.vue'
 import BaseModal from '@/components/ui/BaseModal.vue'
+import ExportExcelButton from '@/components/ui/ExportExcelButton.vue'
 
 export default {
   name: 'StockView',
-  components: { DataTable, BaseModal },
+  components: { DataTable, BaseModal, ExportExcelButton },
   data() {
     return {
       rows: [], loading: true,
@@ -83,6 +84,8 @@ export default {
       </select>
       <label class="row" style="gap:6px"><input type="checkbox" v-model="filters.lowStock" true-value="true" false-value="" @change="load" /> Solo bajo stock</label>
       <button class="btn" @click="load">Filtrar</button>
+      <div class="spacer"></div>
+      <ExportExcelButton path="/export/stock" :params="filters" filename="stock" />
     </div>
 
     <DataTable :columns="actionColumns" :rows="rows" :loading="loading">

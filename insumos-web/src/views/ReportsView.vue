@@ -3,15 +3,16 @@ import { mapState } from 'pinia'
 import { useAuthStore } from '@/stores/auth'
 import { useUiStore } from '@/stores/ui'
 import api from '@/services/api'
+import ExportExcelButton from '@/components/ui/ExportExcelButton.vue'
 
 export default {
   name: 'ReportsView',
+  components: { ExportExcelButton },
   data() {
     return {
       type: 'stock', loading: false, rows: [], columns: [],
       filters: { from: '', to: '', branchId: '', categoryId: '', status: '' },
       branches: [], categories: [],
-      exporting: false,
     }
   },
   computed: {
@@ -25,6 +26,12 @@ export default {
         { v: 'orders', l: 'Pedidos', roles: ['sysadmin', 'admin', 'provider'] },
       ]
       return all.filter(t => t.roles.includes(this.role))
+    },
+    reportExportParams() {
+      return { type: this.type, ...this.filters }
+    },
+    reportFilename() {
+      return `reporte_${this.type}`
     },
   },
   mounted() {
@@ -47,18 +54,6 @@ export default {
       if (typeof v === 'string' && /\d{4}-\d{2}-\d{2}T/.test(v)) return new Date(v).toLocaleString('es-AR')
       return v
     },
-    async exportExcel() {
-      this.exporting = true
-      try {
-        const res = await api.get('/reports/export/excel', { params: { type: this.type, ...this.filters }, responseType: 'blob' })
-        const url = window.URL.createObjectURL(new Blob([res.data]))
-        const a = document.createElement('a')
-        a.href = url
-        a.download = `reporte_${this.type}.xlsx`
-        a.click()
-        window.URL.revokeObjectURL(url)
-      } catch (e) { useUiStore().error('No se pudo exportar') } finally { this.exporting = false }
-    },
   },
 }
 </script>
@@ -67,9 +62,12 @@ export default {
   <div>
     <div class="page-header">
       <div><h1>Reportes</h1><p>Control y análisis de información</p></div>
-      <button class="btn btn-success" :disabled="exporting || !rows.length" @click="exportExcel">
-        <span v-if="exporting" class="spinner"></span> Exportar a Excel
-      </button>
+      <ExportExcelButton
+        path="/reports/export/excel"
+        :params="reportExportParams"
+        :filename="reportFilename"
+        :disabled="!rows.length"
+      />
     </div>
 
     <div class="toolbar">

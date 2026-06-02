@@ -4,10 +4,11 @@ import api from '@/services/api'
 import DataTable from '@/components/ui/DataTable.vue'
 import BaseModal from '@/components/ui/BaseModal.vue'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
+import ExportExcelButton from '@/components/ui/ExportExcelButton.vue'
 
 export default {
   name: 'ProviderCatalogView',
-  components: { DataTable, BaseModal, StatusBadge },
+  components: { DataTable, BaseModal, StatusBadge, ExportExcelButton },
   data() {
     return {
       rows: [], loading: true,
@@ -57,6 +58,11 @@ export default {
     <div class="page-header">
       <div><h1>Mi stock</h1><p>Administra tu catalogo de insumos disponibles</p></div>
       <button class="btn btn-primary" @click="openCreate">+ Nuevo insumo</button>
+    </div>
+
+    <div class="toolbar">
+      <div class="spacer"></div>
+      <ExportExcelButton path="/export/provider-catalog" filename="mi_stock" />
     </div>
 
     <DataTable :columns="columns" :rows="rows" :loading="loading">

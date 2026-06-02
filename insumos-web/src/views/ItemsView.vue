@@ -6,10 +6,11 @@ import Pagination from '@/components/ui/Pagination.vue'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue'
 import ItemsImportModal from '@/components/items/ItemsImportModal.vue'
+import ExportExcelButton from '@/components/ui/ExportExcelButton.vue'
 
 export default {
   name: 'ItemsView',
-  components: { DataTable, Pagination, StatusBadge, ConfirmDialog, ItemsImportModal },
+  components: { DataTable, Pagination, StatusBadge, ConfirmDialog, ItemsImportModal, ExportExcelButton },
   data() {
     return {
       rows: [], meta: {}, loading: true, page: 1,
@@ -79,6 +80,8 @@ export default {
       </select>
       <label class="row" style="gap:6px"><input type="checkbox" v-model="filters.lowStock" true-value="true" false-value="" @change="onSearch" /> Solo bajo stock</label>
       <button class="btn" @click="onSearch">Buscar</button>
+      <div class="spacer"></div>
+      <ExportExcelButton path="/export/items" :params="filters" filename="insumos" />
     </div>
 
     <DataTable :columns="columns" :rows="rows" :loading="loading">

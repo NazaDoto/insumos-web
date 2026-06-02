@@ -7,12 +7,13 @@ import DataTable from '@/components/ui/DataTable.vue'
 import Pagination from '@/components/ui/Pagination.vue'
 import BaseModal from '@/components/ui/BaseModal.vue'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
+import ExportExcelButton from '@/components/ui/ExportExcelButton.vue'
 
 const ROLE_LABEL = { sysadmin: 'Admin Sistema', admin: 'Administrador', provider: 'Proveedor', employee: 'Empleado' }
 
 export default {
   name: 'UsersView',
-  components: { DataTable, Pagination, BaseModal, StatusBadge },
+  components: { DataTable, Pagination, BaseModal, StatusBadge, ExportExcelButton },
   data() {
     return {
       rows: [], meta: {}, loading: true,
@@ -125,6 +126,8 @@ export default {
         <option value="inactive">Inactivos</option>
       </select>
       <button class="btn" @click="onSearch">Buscar</button>
+      <div class="spacer"></div>
+      <ExportExcelButton path="/export/users" :params="filters" filename="usuarios" />
     </div>
 
     <DataTable :columns="columns" :rows="rows" :loading="loading">

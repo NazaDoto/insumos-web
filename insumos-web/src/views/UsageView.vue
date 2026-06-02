@@ -5,10 +5,11 @@ import { useUiStore } from '@/stores/ui'
 import api from '@/services/api'
 import DataTable from '@/components/ui/DataTable.vue'
 import Pagination from '@/components/ui/Pagination.vue'
+import ExportExcelButton from '@/components/ui/ExportExcelButton.vue'
 
 export default {
   name: 'UsageView',
-  components: { DataTable, Pagination },
+  components: { DataTable, Pagination, ExportExcelButton },
   data() {
     return {
       rows: [], meta: {}, loading: true, page: 1,
@@ -58,6 +59,8 @@ export default {
       </select>
       <input v-model="filters.from" class="input" type="date" @change="onFilter" />
       <input v-model="filters.to" class="input" type="date" @change="onFilter" />
+      <div class="spacer"></div>
+      <ExportExcelButton path="/export/usage" :params="filters" filename="uso_insumos" />
     </div>
 
     <DataTable :columns="cols" :rows="rows" :loading="loading">

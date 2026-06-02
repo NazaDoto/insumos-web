@@ -3,6 +3,7 @@ import { useUiStore } from '@/stores/ui'
 import api from '@/services/api'
 import DataTable from '@/components/ui/DataTable.vue'
 import BaseModal from '@/components/ui/BaseModal.vue'
+import ExportExcelButton from '@/components/ui/ExportExcelButton.vue'
 
 const MODULES = [
   { v: 'items', l: 'Insumos' }, { v: 'usage', l: 'Uso de insumos' },
@@ -15,7 +16,7 @@ const TYPES = [
 
 export default {
   name: 'CustomFieldsView',
-  components: { DataTable, BaseModal },
+  components: { DataTable, BaseModal, ExportExcelButton },
   data() {
     return {
       rows: [], loading: true, moduleFilter: '',
@@ -82,6 +83,8 @@ export default {
         <option value="">Todos los módulos</option>
         <option v-for="m in MODULES" :key="m.v" :value="m.v">{{ m.l }}</option>
       </select>
+      <div class="spacer"></div>
+      <ExportExcelButton path="/export/custom-fields" :params="{ module: moduleFilter }" filename="atributos" />
     </div>
 
     <DataTable :columns="columns" :rows="rows" :loading="loading">

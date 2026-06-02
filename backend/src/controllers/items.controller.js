@@ -28,7 +28,7 @@ function mapItem(i) {
 }
 
 // Construye el filtro de propiedad segun rol.
-function ownerWhere(req, params) {
+export function ownerWhere(req, params) {
   if (req.user.role === ROLES.SYSADMIN) return '1=1';
   if (req.user.role === ROLES.ADMIN) {
     params.oid = req.user.id;
