@@ -62,6 +62,7 @@ DB_NAME=insumos_db
 cd backend
 npm install
 npm run db:init     # crea la base de datos + tablas
+npm run db:migrate  # migraciones en bases ya existentes (ej. id externo para Excel)
 npm run db:seed     # usuarios y categorias de ejemplo
   npm run dev         # API en http://localhost:3506
 ```
@@ -144,3 +145,10 @@ sudo certbot renew --dry-run
 `/api/stock` (+ `income`/`outcome`/`transfer`/`adjustment`/`movements`),
 `/api/providers`, `/api/provider/items`, `/api/orders`, `/api/usage`,
 `/api/custom-fields`, `/api/logs`, `/api/reports` (+ `export/excel`), `/api/dashboard`.
+
+### Importación de insumos (Excel)
+
+- Pantalla **Insumos** → **Importar Excel** (plantilla descargable desde el modal).
+- Columna **id_externo**: identificador del Excel/sistema origen; al reimportar se **actualiza** el mismo insumo.
+- Con **stock** + **sucursal** se registra ingreso (o ajuste si ya existía).
+- Endpoint: `POST /api/items/import` (multipart, campo `file`), plantilla: `GET /api/items/import/template`.

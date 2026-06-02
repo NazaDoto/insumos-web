@@ -286,6 +286,35 @@ table.data tbody tr:last-child td { border-bottom: none; }
 .login-card h1 { font-size: 20px; font-weight: 700; margin-bottom: 6px; letter-spacing: -0.02em; }
 .login-card .sub { color: var(--c-muted); font-size: 13.5px; }
 
+/* ---------- Importación Excel ---------- */
+.import-modal .import-steps { margin: 0 0 0 18px; font-size: 13px; line-height: 1.55; color: #334155; }
+.import-modal .import-steps li { margin-bottom: 4px; }
+.btn-link {
+  background: none; border: none; padding: 0; color: var(--c-primary);
+  font-weight: 600; font-size: inherit; cursor: pointer; text-decoration: underline;
+}
+.btn-link:disabled { opacity: .6; cursor: not-allowed; }
+.import-dropzone {
+  border: 2px dashed var(--c-border-strong); border-radius: var(--radius);
+  padding: 28px 20px; text-align: center; cursor: pointer; color: var(--c-muted);
+  transition: border-color .15s, background .15s;
+}
+.import-dropzone.over, .import-dropzone.filled { border-color: var(--c-primary); background: var(--c-primary-soft); color: var(--c-text); }
+.import-dropzone .dz-title { font-weight: 600; margin-top: 10px; font-size: 14px; }
+.import-dropzone .dz-sub { font-size: 12px; margin-top: 4px; }
+.import-progress-head { display: flex; justify-content: space-between; margin-bottom: 6px; }
+.import-progress-bar { height: 6px; background: #e8ecf1; border-radius: 999px; overflow: hidden; }
+.import-progress-fill { height: 100%; background: var(--c-primary); transition: width .15s ease; }
+.import-log {
+  margin-top: 10px; max-height: 160px; overflow-y: auto; font-size: 12px;
+  border: 1px solid var(--c-border); border-radius: var(--radius-sm); background: #fafbfc;
+}
+.import-log-line { padding: 6px 10px; border-bottom: 1px solid #eef1f5; }
+.import-log-line.ok { color: #157347; }
+.import-log-line.err { color: var(--c-danger); font-weight: 500; }
+.import-errors ul { margin: 0; padding-left: 18px; font-size: 13px; max-height: 200px; overflow-y: auto; }
+.import-errors li { margin-bottom: 6px; color: #334155; }
+
 /* ============================================================
    OPTIMIZACIÓN MÓVIL (admin / empleado / proveedor)
    Solo aplica en pantallas chicas; el escritorio no cambia.

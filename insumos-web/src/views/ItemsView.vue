@@ -5,10 +5,11 @@ import DataTable from '@/components/ui/DataTable.vue'
 import Pagination from '@/components/ui/Pagination.vue'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue'
+import ItemsImportModal from '@/components/items/ItemsImportModal.vue'
 
 export default {
   name: 'ItemsView',
-  components: { DataTable, Pagination, StatusBadge, ConfirmDialog },
+  components: { DataTable, Pagination, StatusBadge, ConfirmDialog, ItemsImportModal },
   data() {
     return {
       rows: [], meta: {}, loading: true, page: 1,
@@ -23,6 +24,7 @@ export default {
         { key: 'actions', label: '', align: 'right' },
       ],
       confirm: null, deleting: false,
+      showImport: false,
     }
   },
   mounted() { this.load(); this.loadCategories() },
@@ -59,7 +61,10 @@ export default {
   <div>
     <div class="page-header">
       <div><h1>Insumos</h1><p>Administra tus insumos y su stock</p></div>
-      <RouterLink to="/items/new" class="btn btn-primary">+ Nuevo insumo</RouterLink>
+      <div class="row">
+        <button type="button" class="btn" @click="showImport = true">Importar Excel</button>
+        <RouterLink to="/items/new" class="btn btn-primary">+ Nuevo insumo</RouterLink>
+      </div>
     </div>
 
     <div class="toolbar">
@@ -90,6 +95,12 @@ export default {
       </template>
       <template #footer><Pagination :meta="meta" @change="changePage" /></template>
     </DataTable>
+
+    <ItemsImportModal
+      v-if="showImport"
+      @close="showImport = false"
+      @done="showImport = false; load()"
+    />
 
     <ConfirmDialog v-if="confirm" danger title="Dar de baja insumo"
       :message="`¿Desea desactivar el insumo \u201C${confirm.name}\u201D?`" confirm-text="Desactivar"

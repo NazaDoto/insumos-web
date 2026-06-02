@@ -72,6 +72,7 @@ CREATE TABLE IF NOT EXISTS employee_branches (
 -- ------------------------- ITEMS -----------------------------
 CREATE TABLE IF NOT EXISTS items (
   id INT AUTO_INCREMENT PRIMARY KEY,
+  external_ref_id VARCHAR(80) NULL COMMENT 'ID del sistema origen (Excel) para reimportar/actualizar',
   owner_type  ENUM('administrator','provider') NOT NULL,
   owner_id    INT NOT NULL,
   category_id INT NULL,
@@ -88,6 +89,7 @@ CREATE TABLE IF NOT EXISTS items (
   KEY ix_items_category (category_id),
   KEY ix_items_status (status),
   KEY ix_items_name (name),
+  UNIQUE KEY ux_items_external_ref (owner_type, owner_id, external_ref_id),
   CONSTRAINT fk_items_category FOREIGN KEY (category_id) REFERENCES item_categories(id) ON DELETE SET NULL,
   CONSTRAINT fk_items_creator FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

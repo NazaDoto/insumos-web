@@ -5,10 +5,12 @@ import { ROLES } from '../middlewares/authorize.js';
 import { writeLog, reqMeta } from '../utils/audit.js';
 import { getPagination, buildMeta } from '../utils/pagination.js';
 import { saveCustomValues, loadCustomValues } from '../utils/customValues.js';
+import { importItemsFromExcel, buildImportTemplate } from '../services/items.import.service.js';
 
 function mapItem(i) {
   return {
     id: i.id,
+    externalRefId: i.external_ref_id || null,
     ownerType: i.owner_type,
     ownerId: i.owner_id,
     categoryId: i.category_id,
@@ -212,4 +214,27 @@ export const attributes = asyncHandler(async (req, res) => {
   const item = await fetchScoped(req, req.params.id);
   const customValues = await loadCustomValues('items', item.id);
   res.json({ success: true, data: customValues });
+});
+
+export const importExcel = asyncHandler(async (req, res) => {
+  if (!req.file?.buffer) throw ApiError.badRequest('Debe adjuntar un archivo Excel (.xlsx)');
+  const result = await importItemsFromExcel(req, req.file.buffer);
+  await writeLog({
+    ...reqMeta(req),
+    action: 'import',
+    module: 'items',
+    newValue: result.summary,
+  });
+  res.json({ success: true, ...result });
+});
+
+export const downloadImportTemplate = asyncHandler(async (req, res) => {
+  const wb = await buildImportTemplate();
+  res.setHeader(
+    'Content-Type',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+  );
+  res.setHeader('Content-Disposition', 'attachment; filename="plantilla_insumos.xlsx"');
+  await wb.xlsx.write(res);
+  res.end();
 });
