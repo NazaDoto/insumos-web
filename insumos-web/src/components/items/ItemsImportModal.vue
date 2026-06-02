@@ -137,13 +137,15 @@ export default {
         this.summary = data.summary
         await this.animateEvents(data.events || [])
 
+        this.$emit('done', data.summary)
+
         if (data.summary?.errors) {
           useUiStore().warning(
             `Importación con ${data.summary.errors} error(es). Revise el detalle.`
           )
         } else {
           useUiStore().success('Importación completada correctamente')
-          this.$emit('done')
+          this.$emit('close')
         }
       } catch (e) {
         useUiStore().error(e.userMessage || 'Error al importar')

@@ -40,6 +40,10 @@ export default {
     async loadCategories() {
       try { const { data } = await api.get('/categories'); this.categories = data.data } catch (e) { /* */ }
     },
+    async refreshAfterImport() {
+      this.page = 1
+      await Promise.all([this.load(), this.loadCategories()])
+    },
     onSearch() { this.page = 1; this.load() },
     changePage(p) { this.page = p; this.load() },
     isLow(r) { return Number(r.totalStock) <= Number(r.minimumStock) },
@@ -99,7 +103,7 @@ export default {
     <ItemsImportModal
       v-if="showImport"
       @close="showImport = false"
-      @done="showImport = false; load()"
+      @done="refreshAfterImport"
     />
 
     <ConfirmDialog v-if="confirm" danger title="Dar de baja insumo"
