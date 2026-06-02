@@ -4,7 +4,7 @@ import asyncHandler from '../utils/asyncHandler.js';
 import { ROLES } from '../middlewares/authorize.js';
 import { writeLog, reqMeta } from '../utils/audit.js';
 import { getPagination, buildMeta } from '../utils/pagination.js';
-import { applyStockDelta, recordMovement } from '../services/stock.service.js';
+import { applyStockDelta, recordMovement, assignStockToBranch, unassignStockFromBranch } from '../services/stock.service.js';
 
 // Verifica que el insumo pertenezca al admin actual (o sysadmin).
 async function assertItem(conn, req, itemId) {
@@ -28,7 +28,7 @@ async function assertBranch(conn, req, branchId) {
 function adminFilter(req, params) {
   if (req.user.role === ROLES.ADMIN) {
     params.adminId = req.user.id;
-    return 'b.administrator_id = :adminId';
+    return `(b.administrator_id = :adminId OR (s.branch_id IS NULL AND i.owner_type = 'administrator' AND i.owner_id = :adminId))`;
   }
   if (req.user.role === ROLES.EMPLOYEE) {
     params.emp = req.user.id;
@@ -40,7 +40,12 @@ function adminFilter(req, params) {
 export const list = asyncHandler(async (req, res) => {
   const params = {};
   const where = [adminFilter(req, params)];
-  if (req.query.branchId) {
+  if (req.user.role === ROLES.EMPLOYEE) {
+    where.push('s.branch_id IS NOT NULL');
+  }
+  if (req.query.unassigned === 'true') {
+    where.push('s.branch_id IS NULL');
+  } else if (req.query.branchId) {
     where.push('s.branch_id = :branchId');
     params.branchId = req.query.branchId;
   }
@@ -61,7 +66,7 @@ export const list = asyncHandler(async (req, res) => {
      JOIN items i ON i.id = s.item_id
      LEFT JOIN branches b ON b.id = s.branch_id
      WHERE ${where.join(' AND ')}
-     ORDER BY COALESCE(b.name, ''), i.name`,
+     ORDER BY s.branch_id IS NULL DESC, COALESCE(b.name, ''), i.name`,
     params
   );
   res.json({ success: true, data: rows });
@@ -95,7 +100,8 @@ export const movements = asyncHandler(async (req, res) => {
 
   const [rows] = await pool.execute(
     `SELECT m.*, i.name AS item_name, CONCAT(u.first_name,' ',u.last_name) AS user_name,
-            ob.name AS origin_branch, db.name AS destination_branch
+            COALESCE(ob.name, IF(m.origin_branch_id IS NULL AND m.movement_type IN ('income','outcome','transfer','adjustment'), 'Sin asignar', NULL)) AS origin_branch,
+            COALESCE(db.name, IF(m.destination_branch_id IS NULL AND m.movement_type IN ('income','outcome','transfer','adjustment'), 'Sin asignar', NULL)) AS destination_branch
      FROM stock_movements m
      JOIN items i ON i.id = m.item_id
      LEFT JOIN users u ON u.id = m.created_by
@@ -117,11 +123,16 @@ export const income = asyncHandler(async (req, res) => {
   await withTransaction(async (conn) => {
     await assertItem(conn, req, itemId);
     await assertBranch(conn, req, branchId);
-    await applyStockDelta(conn, { itemId, branchId, delta: quantity });
-    await recordMovement(conn, { itemId, type: 'income', quantity, destinationBranchId: branchId, reason, createdBy: req.user.id });
+    await assignStockToBranch(conn, {
+      itemId,
+      branchId,
+      quantity,
+      reason: reason || 'Asignación a sucursal',
+      createdBy: req.user.id,
+    });
   });
   await writeLog({ ...reqMeta(req), action: 'stock_income', module: 'stock', recordId: itemId, newValue: { branchId, quantity } });
-  res.status(201).json({ success: true, message: 'Ingreso registrado' });
+  res.status(201).json({ success: true, message: 'Stock asignado a la sucursal' });
 });
 
 export const outcome = asyncHandler(async (req, res) => {
@@ -129,11 +140,16 @@ export const outcome = asyncHandler(async (req, res) => {
   await withTransaction(async (conn) => {
     await assertItem(conn, req, itemId);
     await assertBranch(conn, req, branchId);
-    await applyStockDelta(conn, { itemId, branchId, delta: -Math.abs(quantity) });
-    await recordMovement(conn, { itemId, type: 'outcome', quantity, originBranchId: branchId, reason, createdBy: req.user.id });
+    await unassignStockFromBranch(conn, {
+      itemId,
+      branchId,
+      quantity,
+      reason: reason || 'Devolución a stock sin asignar',
+      createdBy: req.user.id,
+    });
   });
   await writeLog({ ...reqMeta(req), action: 'stock_outcome', module: 'stock', recordId: itemId, newValue: { branchId, quantity } });
-  res.status(201).json({ success: true, message: 'Egreso registrado' });
+  res.status(201).json({ success: true, message: 'Stock devuelto a sin asignar' });
 });
 
 export const transfer = asyncHandler(async (req, res) => {
@@ -175,4 +191,49 @@ export const adjustment = asyncHandler(async (req, res) => {
   });
   await writeLog({ ...reqMeta(req), action: 'stock_adjustment', module: 'stock', recordId: itemId, newValue: { branchId, newQuantity } });
   res.status(201).json({ success: true, message: 'Ajuste registrado' });
+});
+
+export const levels = asyncHandler(async (req, res) => {
+  const itemId = Number(req.query.itemId);
+  if (!itemId) throw ApiError.badRequest('itemId requerido');
+
+  await assertItem(pool, req, itemId);
+
+  const unassignedRow = await pool.execute(
+    `SELECT COALESCE(quantity, 0) AS quantity FROM stock
+     WHERE item_id = :itemId AND branch_id IS NULL AND provider_id IS NULL`,
+    { itemId }
+  );
+  const unassigned = Number(unassignedRow[0][0]?.quantity || 0);
+
+  const params = { itemId };
+  let branchWhere = "b.status = 'active'";
+  if (req.user.role === ROLES.ADMIN) {
+    branchWhere += ' AND b.administrator_id = :adminId';
+    params.adminId = req.user.id;
+  } else if (req.user.role === ROLES.EMPLOYEE) {
+    branchWhere += ' AND b.id IN (SELECT branch_id FROM employee_branches WHERE user_id = :emp)';
+    params.emp = req.user.id;
+  }
+
+  const [branches] = await pool.execute(
+    `SELECT b.id, b.name, COALESCE(s.quantity, 0) AS quantity
+     FROM branches b
+     LEFT JOIN stock s ON s.item_id = :itemId AND s.branch_id = b.id AND s.provider_id IS NULL
+     WHERE ${branchWhere}
+     ORDER BY b.name`,
+    params
+  );
+
+  res.json({
+    success: true,
+    data: {
+      unassigned,
+      branches: branches.map((b) => ({
+        id: b.id,
+        name: b.name,
+        quantity: Number(b.quantity),
+      })),
+    },
+  });
 });

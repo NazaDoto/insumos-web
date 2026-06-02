@@ -41,21 +41,25 @@ export default {
       </div>
 
       <div class="stat-grid mb-4">
+        <div class="stat"><span class="stat-label">Sin asignar</span><span class="stat-value">{{ item.unassignedStock ?? 0 }}</span></div>
+        <div class="stat"><span class="stat-label">En sucursales</span><span class="stat-value">{{ item.assignedStock ?? 0 }}</span></div>
         <div class="stat"><span class="stat-label">Stock total</span><span class="stat-value">{{ item.totalStock }}</span></div>
         <div class="stat"><span class="stat-label">Stock mínimo</span><span class="stat-value">{{ item.minimumStock }}</span></div>
-        <div class="stat"><span class="stat-label">Estado</span><span class="mt-2"><StatusBadge :status="item.status" /></span></div>
-        <div class="stat"><span class="stat-label">Estado fisico</span><span class="mt-2"><StatusBadge :status="item.conditionState" /></span></div>
+      </div>
+      <div class="row mb-4" style="gap:8px">
+        <span class="mt-2"><StatusBadge :status="item.status" /></span>
+        <span class="mt-2"><StatusBadge :status="item.conditionState" /></span>
       </div>
 
       <div class="grid-2">
         <div class="card">
-          <div class="card-header"><h3>Stock por sucursal</h3></div>
+          <div class="card-header"><h3>Distribución de stock</h3></div>
           <div class="table-wrap">
             <table class="data data-cards">
-              <thead><tr><th>Sucursal</th><th class="text-right">Cantidad</th></tr></thead>
+              <thead><tr><th>Ubicación</th><th class="text-right">Cantidad</th></tr></thead>
               <tbody>
                 <tr v-for="(s, i) in item.stockByBranch" :key="i">
-                  <td data-label="Sucursal">{{ s.branch_name || 'Sin asignar' }}</td>
+                  <td data-label="Ubicación">{{ s.branch_id == null ? 'Sin asignar' : (s.branch_name || 'Sucursal') }}</td>
                   <td class="text-right" data-label="Cantidad">{{ s.quantity }}</td>
                 </tr>
                 <tr v-if="!item.stockByBranch.length" class="empty-row"><td colspan="2" class="table-empty empty-cell">Sin stock distribuido</td></tr>

@@ -18,6 +18,13 @@ router.get('/:id', ctrl.getOne);
 router.get('/:id/movements', ctrl.movements);
 router.get('/:id/attributes', ctrl.attributes);
 
+router.patch(
+  '/:id/unassigned-stock',
+  authorize(ROLES.SYSADMIN, ROLES.ADMIN),
+  validateBody({ quantity: { type: 'number', required: true, min: 0 } }),
+  ctrl.setUnassignedStock
+);
+
 router.post(
   '/',
   canWrite,

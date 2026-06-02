@@ -96,14 +96,20 @@ export async function exportItems(req) {
   }
   if (categoryId) { where.push('i.category_id = :cat'); params.cat = categoryId; }
   if (status) { where.push('i.status = :st'); params.st = status; }
-  const havingLow = lowStock === 'true' ? 'HAVING total_stock <= i.minimum_stock' : '';
+  if (lowStock === 'true') {
+    where.push(
+      `(SELECT COALESCE(SUM(quantity), 0) FROM stock s WHERE s.item_id = i.id AND s.provider_id IS NULL) <= i.minimum_stock`
+    );
+  }
   const whereSql = where.join(' AND ');
 
   const [rows] = await pool.execute(
     `SELECT i.*, c.name AS category_name,
-            COALESCE((SELECT SUM(quantity) FROM stock s WHERE s.item_id = i.id),0) AS total_stock
+            COALESCE((SELECT quantity FROM stock s WHERE s.item_id = i.id AND s.branch_id IS NULL AND s.provider_id IS NULL), 0) AS unassigned_stock,
+            COALESCE((SELECT SUM(quantity) FROM stock s WHERE s.item_id = i.id AND s.branch_id IS NOT NULL), 0) AS assigned_stock,
+            COALESCE((SELECT SUM(quantity) FROM stock s WHERE s.item_id = i.id AND s.provider_id IS NULL), 0) AS total_stock
      FROM items i LEFT JOIN item_categories c ON c.id = i.category_id
-     WHERE ${whereSql} GROUP BY i.id ${havingLow}
+     WHERE ${whereSql}
      ORDER BY i.name LIMIT ${MAX_ROWS}`,
     params
   );
@@ -112,7 +118,9 @@ export async function exportItems(req) {
     'ID externo': i.external_ref_id || '',
     Insumo: i.name,
     Categoría: i.category_name || '',
-    Stock: Number(i.total_stock),
+    'Sin asignar': Number(i.unassigned_stock),
+    'Asignado (sucursales)': Number(i.assigned_stock),
+    'Stock total': Number(i.total_stock),
     Unidad: i.unit,
     'Stock mínimo': Number(i.minimum_stock),
     Estado: label(STATUS_ES, i.status),
@@ -199,7 +207,7 @@ export async function exportStock(req) {
   );
   return rows.map((r) => ({
     Insumo: r.item_name,
-    Sucursal: r.branch_name || 'Stock general',
+    Sucursal: r.branch_name || 'Sin asignar',
     Cantidad: Number(r.quantity),
     Unidad: r.unit,
     'Stock mínimo': Number(r.minimum_stock),
@@ -224,7 +232,8 @@ export async function exportMovements(req) {
 
   const [rows] = await pool.execute(
     `SELECT m.*, i.name AS item_name, CONCAT(u.first_name,' ',u.last_name) AS user_name,
-            ob.name AS origin_branch, db.name AS destination_branch
+            COALESCE(ob.name, IF(m.origin_branch_id IS NULL AND m.movement_type IN ('income','outcome','transfer','adjustment'), 'Sin asignar', NULL)) AS origin_branch,
+            COALESCE(db.name, IF(m.destination_branch_id IS NULL AND m.movement_type IN ('income','outcome','transfer','adjustment'), 'Sin asignar', NULL)) AS destination_branch
      FROM stock_movements m JOIN items i ON i.id = m.item_id
      LEFT JOIN users u ON u.id = m.created_by
      LEFT JOIN branches ob ON ob.id = m.origin_branch_id

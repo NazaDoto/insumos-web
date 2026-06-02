@@ -45,6 +45,70 @@ export async function applyStockDelta(conn, { itemId, branchId = null, providerI
   return next;
 }
 
+/** Mueve cantidad del pool sin asignar (branch_id NULL) hacia una sucursal. */
+export async function assignStockToBranch(conn, { itemId, branchId, quantity, reason, createdBy }) {
+  const qty = Math.abs(Number(quantity));
+  await applyStockDelta(conn, { itemId, branchId: null, delta: -qty });
+  await applyStockDelta(conn, { itemId, branchId, delta: qty });
+  await recordMovement(conn, {
+    itemId,
+    type: 'income',
+    quantity: qty,
+    originBranchId: null,
+    destinationBranchId: branchId,
+    reason,
+    createdBy,
+  });
+}
+
+/** Devuelve cantidad de una sucursal al pool sin asignar. */
+export async function unassignStockFromBranch(conn, { itemId, branchId, quantity, reason, createdBy }) {
+  const qty = Math.abs(Number(quantity));
+  await applyStockDelta(conn, { itemId, branchId, delta: -qty });
+  await applyStockDelta(conn, { itemId, branchId: null, delta: qty });
+  await recordMovement(conn, {
+    itemId,
+    type: 'outcome',
+    quantity: qty,
+    originBranchId: branchId,
+    destinationBranchId: null,
+    reason,
+    createdBy,
+  });
+}
+
+/** Ajusta el stock sin asignar a una cantidad absoluta (registra ingreso/egreso). */
+export async function setUnassignedStockQty(conn, { itemId, targetQty, reason, createdBy }) {
+  const current = await getStockQty(conn, { itemId, branchId: null });
+  const currentQty = current ? Number(current.quantity) : 0;
+  const target = Number(targetQty);
+  const delta = target - currentQty;
+  if (delta === 0) return { changed: false, quantity: currentQty };
+
+  if (delta > 0) {
+    await applyStockDelta(conn, { itemId, branchId: null, delta });
+    await recordMovement(conn, {
+      itemId,
+      type: 'income',
+      quantity: delta,
+      destinationBranchId: null,
+      reason: reason || 'Ingreso a stock sin asignar',
+      createdBy,
+    });
+  } else {
+    await applyStockDelta(conn, { itemId, branchId: null, delta });
+    await recordMovement(conn, {
+      itemId,
+      type: 'outcome',
+      quantity: Math.abs(delta),
+      originBranchId: null,
+      reason: reason || 'Egreso de stock sin asignar',
+      createdBy,
+    });
+  }
+  return { changed: true, quantity: target };
+}
+
 // Registra un movimiento de stock.
 export async function recordMovement(conn, m) {
   await conn.execute(

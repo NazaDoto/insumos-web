@@ -7,6 +7,7 @@ const router = Router();
 
 router.get('/', ctrl.list);
 router.get('/movements', ctrl.movements);
+router.get('/levels', ctrl.levels);
 
 const moveRoles = authorize(ROLES.SYSADMIN, ROLES.ADMIN);
 

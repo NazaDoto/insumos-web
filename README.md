@@ -171,6 +171,8 @@ Reportes dinámicos: `GET /api/reports/export/excel?type=...` (mismos filtros qu
 
 - Pantalla **Insumos** → **Importar Excel** (plantilla descargable desde el modal).
 - Columna **id_externo**: identificador del Excel/sistema origen; al reimportar se **actualiza** el mismo insumo.
-- Con **stock** se registra ingreso (o ajuste si ya existía). **Sucursal** es opcional: vacía + una sola oficina → esa oficina; vacía + varias → stock general sin sucursal.
+- Con **stock** se registra ingreso (o ajuste si ya existía). **Sucursal** es opcional: vacía → **stock sin asignar**; con nombre → stock en esa sucursal.
+- **Insumos** (listado): botón **Stock** ajusta el pool sin asignar (movimiento de ingreso/egreso).
+- **Movimientos**: ingreso a sucursal toma de sin asignar; egreso devuelve a sin asignar; transferencia entre sucursales; ajuste manual solo en la sucursal elegida.
 - **Atributos personalizados** (módulo Insumos): columnas dinámicas en la plantilla según los campos activos; obligatorios, listas, fechas y booleanos se validan al importar.
 - Endpoint: `POST /api/items/import` (multipart, campo `file`), plantilla: `GET /api/items/import/template`.

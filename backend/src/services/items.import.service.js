@@ -337,10 +337,8 @@ async function loadBranches(conn, owner) {
 }
 
 /**
- * Resuelve dónde cargar el stock cuando la fila del Excel no trae sucursal:
- * - Si indicó nombre: debe existir entre las sucursales activas.
- * - Si tiene una sola sucursal: se usa esa (el stock aparece en Stock disponible).
- * - Si tiene varias o ninguna: stock general (branch_id NULL, "Sin asignar" en detalle).
+ * Sin sucursal en Excel → stock sin asignar (branch_id NULL).
+ * Con nombre de sucursal → stock en esa sucursal.
  */
 function resolveImportBranch(branchMap, branchName) {
   const key = String(branchName || '').trim().toLowerCase();
@@ -351,11 +349,7 @@ function resolveImportBranch(branchMap, branchName) {
     }
     return { branchId: hit.id, locationLabel: hit.name };
   }
-  if (branchMap.size === 1) {
-    const [, only] = [...branchMap.entries()][0];
-    return { branchId: only.id, locationLabel: only.name, autoAssigned: true };
-  }
-  return { branchId: null, locationLabel: 'Sin sucursal (stock general)' };
+  return { branchId: null, locationLabel: 'Sin asignar' };
 }
 
 async function findItemByExternalRef(conn, owner, externalRefId) {

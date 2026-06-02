@@ -6,6 +6,7 @@ import { writeLog, reqMeta } from '../utils/audit.js';
 import { getPagination, buildMeta } from '../utils/pagination.js';
 import { saveCustomValues, loadCustomValues } from '../utils/customValues.js';
 import { importItemsFromExcel, buildImportTemplate } from '../services/items.import.service.js';
+import { setUnassignedStockQty } from '../services/stock.service.js';
 
 function mapItem(i) {
   return {
@@ -21,6 +22,8 @@ function mapItem(i) {
     minimumStock: i.minimum_stock,
     status: i.status,
     conditionState: i.condition_state,
+    unassignedStock: i.unassigned_stock !== undefined ? Number(i.unassigned_stock || 0) : undefined,
+    assignedStock: i.assigned_stock !== undefined ? Number(i.assigned_stock || 0) : undefined,
     totalStock: i.total_stock !== undefined ? Number(i.total_stock || 0) : undefined,
     createdAt: i.created_at,
     updatedAt: i.updated_at,
@@ -67,18 +70,21 @@ export const list = asyncHandler(async (req, res) => {
     where.push('i.status = :st');
     params.st = status;
   }
+  if (lowStock === 'true') {
+    where.push(
+      `(SELECT COALESCE(SUM(quantity), 0) FROM stock s WHERE s.item_id = i.id AND s.provider_id IS NULL) <= i.minimum_stock`
+    );
+  }
   const whereSql = where.join(' AND ');
-
-  const havingLow = lowStock === 'true' ? 'HAVING total_stock <= i.minimum_stock' : '';
 
   const [rows] = await pool.execute(
     `SELECT i.*, c.name AS category_name,
-            COALESCE((SELECT SUM(quantity) FROM stock s WHERE s.item_id = i.id),0) AS total_stock
+            COALESCE((SELECT quantity FROM stock s WHERE s.item_id = i.id AND s.branch_id IS NULL AND s.provider_id IS NULL), 0) AS unassigned_stock,
+            COALESCE((SELECT SUM(quantity) FROM stock s WHERE s.item_id = i.id AND s.branch_id IS NOT NULL), 0) AS assigned_stock,
+            COALESCE((SELECT SUM(quantity) FROM stock s WHERE s.item_id = i.id AND s.provider_id IS NULL), 0) AS total_stock
      FROM items i
      LEFT JOIN item_categories c ON c.id = i.category_id
      WHERE ${whereSql}
-     GROUP BY i.id
-     ${havingLow}
      ORDER BY i.name
      LIMIT ${limit} OFFSET ${offset}`,
     params
@@ -94,7 +100,9 @@ export const list = asyncHandler(async (req, res) => {
 async function fetchScoped(req, id, write = false) {
   const [rows] = await pool.execute(
     `SELECT i.*, c.name AS category_name,
-            COALESCE((SELECT SUM(quantity) FROM stock s WHERE s.item_id = i.id),0) AS total_stock
+            COALESCE((SELECT quantity FROM stock s WHERE s.item_id = i.id AND s.branch_id IS NULL AND s.provider_id IS NULL), 0) AS unassigned_stock,
+            COALESCE((SELECT SUM(quantity) FROM stock s WHERE s.item_id = i.id AND s.branch_id IS NOT NULL), 0) AS assigned_stock,
+            COALESCE((SELECT SUM(quantity) FROM stock s WHERE s.item_id = i.id AND s.provider_id IS NULL), 0) AS total_stock
      FROM items i LEFT JOIN item_categories c ON c.id = i.category_id WHERE i.id = :id`,
     { id }
   );
@@ -118,7 +126,9 @@ export const getOne = asyncHandler(async (req, res) => {
   const customValues = await loadCustomValues('items', item.id);
   const [stockRows] = await pool.execute(
     `SELECT s.branch_id, b.name AS branch_name, s.quantity
-     FROM stock s LEFT JOIN branches b ON b.id = s.branch_id WHERE s.item_id = :id`,
+     FROM stock s LEFT JOIN branches b ON b.id = s.branch_id
+     WHERE s.item_id = :id AND s.provider_id IS NULL
+     ORDER BY s.branch_id IS NULL DESC, b.name`,
     { id: item.id }
   );
   res.json({ success: true, data: { ...mapItem(item), customValues, stockByBranch: stockRows } });
@@ -195,11 +205,41 @@ export const remove = asyncHandler(async (req, res) => {
   res.json({ success: true, message: 'Insumo desactivado' });
 });
 
+export const setUnassignedStock = asyncHandler(async (req, res) => {
+  const item = await fetchScoped(req, req.params.id, true);
+  if (item.owner_type === 'provider') {
+    throw ApiError.badRequest('Use la gestión de stock del proveedor para este insumo');
+  }
+  const { quantity, reason } = req.body;
+  const target = Number(quantity);
+  if (Number.isNaN(target) || target < 0) throw ApiError.badRequest('Cantidad inválida');
+
+  await withTransaction(async (conn) => {
+    const result = await setUnassignedStockQty(conn, {
+      itemId: item.id,
+      targetQty: target,
+      reason: reason || 'Ajuste desde listado de insumos',
+      createdBy: req.user.id,
+    });
+    if (!result.changed && target === 0) return;
+  });
+
+  await writeLog({
+    ...reqMeta(req),
+    action: 'stock_unassigned',
+    module: 'items',
+    recordId: item.id,
+    newValue: { quantity: target },
+  });
+  res.json({ success: true, message: 'Stock sin asignar actualizado' });
+});
+
 export const movements = asyncHandler(async (req, res) => {
   const item = await fetchScoped(req, req.params.id);
   const [rows] = await pool.execute(
     `SELECT m.*, CONCAT(u.first_name,' ',u.last_name) AS user_name,
-            ob.name AS origin_branch, db.name AS destination_branch
+            COALESCE(ob.name, IF(m.origin_branch_id IS NULL AND m.movement_type IN ('income','outcome','transfer','adjustment'), 'Sin asignar', NULL)) AS origin_branch,
+            COALESCE(db.name, IF(m.destination_branch_id IS NULL AND m.movement_type IN ('income','outcome','transfer','adjustment'), 'Sin asignar', NULL)) AS destination_branch
      FROM stock_movements m
      LEFT JOIN users u ON u.id = m.created_by
      LEFT JOIN branches ob ON ob.id = m.origin_branch_id

@@ -7,10 +7,11 @@ import StatusBadge from '@/components/ui/StatusBadge.vue'
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue'
 import ItemsImportModal from '@/components/items/ItemsImportModal.vue'
 import ExportExcelButton from '@/components/ui/ExportExcelButton.vue'
+import BaseModal from '@/components/ui/BaseModal.vue'
 
 export default {
   name: 'ItemsView',
-  components: { DataTable, Pagination, StatusBadge, ConfirmDialog, ItemsImportModal, ExportExcelButton },
+  components: { DataTable, Pagination, StatusBadge, ConfirmDialog, ItemsImportModal, ExportExcelButton, BaseModal },
   data() {
     return {
       rows: [], meta: {}, loading: true, page: 1,
@@ -19,13 +20,17 @@ export default {
       columns: [
         { key: 'name', label: 'Insumo' },
         { key: 'category', label: 'Categoría' },
-        { key: 'totalStock', label: 'Stock', align: 'right' },
+        { key: 'unassignedStock', label: 'Sin asignar', align: 'right' },
+        { key: 'assignedStock', label: 'En sucursales', align: 'right' },
         { key: 'unit', label: 'Unidad' },
         { key: 'status', label: 'Estado' },
         { key: 'actions', label: '', align: 'right' },
       ],
       confirm: null, deleting: false,
       showImport: false,
+      stockModal: null,
+      stockQty: null,
+      stockSaving: false,
     }
   },
   mounted() { this.load(); this.loadCategories() },
@@ -48,6 +53,23 @@ export default {
     onSearch() { this.page = 1; this.load() },
     changePage(p) { this.page = p; this.load() },
     isLow(r) { return Number(r.totalStock) <= Number(r.minimumStock) },
+    openStock(r) {
+      this.stockModal = r
+      this.stockQty = Number(r.unassignedStock ?? 0)
+    },
+    async saveStock() {
+      if (!this.stockModal) return
+      this.stockSaving = true
+      try {
+        await api.patch(`/items/${this.stockModal.id}/unassigned-stock`, {
+          quantity: Number(this.stockQty),
+          reason: 'Ajuste desde listado de insumos',
+        })
+        useUiStore().success('Stock sin asignar actualizado')
+        this.stockModal = null
+        await this.load()
+      } catch (e) { useUiStore().error(e.userMessage) } finally { this.stockSaving = false }
+    },
     askDelete(r) { this.confirm = r },
     async doDelete() {
       this.deleting = true
@@ -88,13 +110,18 @@ export default {
       <template #cell-name="{ row }">
         <RouterLink :to="`/items/${row.id}`" style="font-weight:600;color:var(--c-primary)">{{ row.name }}</RouterLink>
       </template>
-      <template #cell-totalStock="{ row }">
-        <span :style="isLow(row) ? 'color:var(--c-danger);font-weight:600' : ''">{{ row.totalStock }}</span>
+      <template #cell-unassignedStock="{ row }">
+        <span :style="isLow(row) ? 'color:var(--c-danger);font-weight:600' : ''">{{ row.unassignedStock ?? 0 }}</span>
         <span v-if="isLow(row)" class="badge red" style="margin-left:6px">Bajo</span>
+      </template>
+      <template #cell-assignedStock="{ row }">{{ row.assignedStock ?? 0 }}</template>
+      <template #cell-totalStock="{ row }">
+        <span class="muted">{{ row.totalStock ?? 0 }}</span>
       </template>
       <template #cell-status="{ row }"><StatusBadge :status="row.status" /></template>
       <template #cell-actions="{ row }">
         <div class="actions" style="justify-content:flex-end">
+          <button type="button" class="btn btn-sm" @click="openStock(row)">Stock</button>
           <RouterLink :to="`/items/${row.id}`" class="btn btn-sm">Ver</RouterLink>
           <RouterLink :to="`/items/${row.id}/edit`" class="btn btn-sm">Editar</RouterLink>
           <button class="btn btn-sm" @click="askDelete(row)">Baja</button>
@@ -112,5 +139,22 @@ export default {
     <ConfirmDialog v-if="confirm" danger title="Dar de baja insumo"
       :message="`¿Desea desactivar el insumo \u201C${confirm.name}\u201D?`" confirm-text="Desactivar"
       :loading="deleting" @confirm="doDelete" @cancel="confirm = null" />
+
+    <BaseModal v-if="stockModal" :title="`Stock sin asignar — ${stockModal.name}`" @close="stockModal = null">
+      <p class="muted" style="margin-bottom:12px">
+        En sucursales: <strong>{{ stockModal.assignedStock ?? 0 }}</strong> {{ stockModal.unit }}.
+        El cambio aquí registra un ingreso o egreso al pool sin asignar.
+      </p>
+      <div class="field">
+        <label>Cantidad sin asignar <span class="req">*</span></label>
+        <input v-model.number="stockQty" class="input" type="number" min="0" step="0.001" />
+      </div>
+      <template #footer>
+        <button type="button" class="btn" @click="stockModal = null">Cancelar</button>
+        <button type="button" class="btn btn-primary" :disabled="stockSaving" @click="saveStock">
+          <span v-if="stockSaving" class="spinner"></span> Guardar
+        </button>
+      </template>
+    </BaseModal>
   </div>
 </template>
