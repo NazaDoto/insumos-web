@@ -2,9 +2,11 @@
 import { mapActions } from 'pinia'
 import { useAuthStore } from '@/stores/auth'
 import { useUiStore } from '@/stores/ui'
+import AppIcon from '@/components/icons/AppIcon.vue'
 
 export default {
   name: 'LoginView',
+  components: { AppIcon },
   data() {
     return { identifier: '', password: '', loading: false, error: '' }
   },
@@ -40,9 +42,13 @@ export default {
 <template>
   <div class="login-wrap">
     <form class="login-card" @submit.prevent="submit">
-      <div class="login-logo">{{ '\u{1F4E6}' }}</div>
-      <h1>Gestión de Insumos</h1>
-      <p class="sub">Ingrese sus credenciales para continuar</p>
+      <div class="login-brand">
+        <div class="login-logo">
+          <AppIcon name="box-seam-fill" :size="28" />
+        </div>
+        <h1>Gestión de Insumos</h1>
+        <p class="sub">Ingrese sus credenciales para continuar</p>
+      </div>
 
       <div class="field">
         <label>Email o usuario</label>

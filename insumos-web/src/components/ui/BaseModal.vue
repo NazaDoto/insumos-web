@@ -1,6 +1,9 @@
 <script>
+import AppIcon from '@/components/icons/AppIcon.vue'
+
 export default {
   name: 'BaseModal',
+  components: { AppIcon },
   props: {
     title: { type: String, default: '' },
     large: { type: Boolean, default: false },
@@ -24,7 +27,9 @@ export default {
     <div :class="['modal', { lg: large }]">
       <div class="modal-header">
         <h3>{{ title }}</h3>
-        <button class="btn btn-ghost btn-sm" @click="$emit('close')">&times;</button>
+        <button type="button" class="btn btn-ghost btn-sm btn-icon" aria-label="Cerrar" @click="$emit('close')">
+          <AppIcon name="x-lg" :size="18" />
+        </button>
       </div>
       <div class="modal-body">
         <slot />
